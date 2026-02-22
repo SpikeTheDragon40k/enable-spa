@@ -1,14 +1,9 @@
 {
-  "emulators": {
-    "dataconnect": {
-      "dataDir": "dataconnect/.dataconnect/pgliteData"
-    }
-  },
-  "dataconnect": {
-    "source": "dataconnect"
+  "functions": {
+    "source": "functions/backend"
   },
   "hosting": {
-    "public": "dist",
+    "public": "enable-device/dist",
     "ignore": [
       "firebase.json",
       "**/.*",

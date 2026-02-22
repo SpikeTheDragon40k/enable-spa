@@ -3,3 +3,5 @@ node_modules/
 dist/
 .firebaserc
 package-lock.json
+.vscode/chrome/
+private-notes.md

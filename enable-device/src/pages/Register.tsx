@@ -3,7 +3,7 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
-import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
+import { secureCallable } from "../services/security/secureCallable";
 
 
 export default function Register() {
@@ -26,31 +26,14 @@ export default function Register() {
 
     setLoading(true);
 
-    const actionCodeSettings = {
-      // URL you want to redirect back to. The domain (www.example.com) for this
-      // URL must be in the authorized domains list in the Firebase Console.
-      url: "https://enableitalia.firebaseapp.com/complete-registration",
-      // This must be true.
-      handleCodeInApp: true,
-      iOS: {
-        bundleId: 'enableitalia.firebaseapp.com'
-      },
-      android: {
-        packageName: 'enableitalia.firebaseapp.com',
-        installApp: true,
-        minimumVersion: '12'
-      },
-      // The domain must be configured in Firebase Hosting and owned by the project.
-      linkDomain: 'enableitalia.firebaseapp.com'
-    };
-
     try {
-      const auth = getAuth();
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
+      secureCallable("register", {
+        email
+      }, "register_email");
+
       setSubmitted(true);
       setEmail("");
-      setTimeout(() => navigate("/login"), 5000);
+      setTimeout(() => window.location.replace("/login"), 5000);
     } catch (err: unknown) {
       console.error("Registration error:", err);
       let errorMessage = "Registrazione fallita. Riprova.";
@@ -92,6 +75,12 @@ return (
           onClick={handleRegister}
           disabled={loading || !email}
         />
+      <Button
+        label="Torna alla login"
+        className="p-button-text mt-2"
+        onClick={() => navigate("/login")}
+        disabled={loading}
+      />
       </div>
     ) : (
       <div

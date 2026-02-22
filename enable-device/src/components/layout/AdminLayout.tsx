@@ -4,20 +4,22 @@ import { PanelMenu } from "primereact/panelmenu";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { Dialog } from "primereact/dialog";
+import { Sidebar } from "primereact/sidebar";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 
-import AdminAll from "../../pages/admin/AdminAll";
-import AdminTriage from "../../pages/admin/AdminTriage";
-import AdminPending from "../../pages/admin/AdminPending";
-import AdminProduction from "../../pages/admin/AdminProduction";
-import AdminShipping from "../../pages/admin/AdminShipping";
-import AdminCompleted from "../../pages/admin/AdminCompleted";
-import AdminCancelled from "../../pages/admin/AdminCancelled";
-import AdminVolunteers from "../../pages/admin/AdminVolunteers";
+import AdminAll from "../../pages/admin/requests/AdminAll";
+import AdminTriage from "../../pages/admin/requests/AdminTriage";
+import AdminPending from "../../pages/admin/requests/AdminPending";
+import AdminProduction from "../../pages/admin/requests/AdminProduction";
+import AdminShipping from "../../pages/admin/requests/AdminShipping";
+import AdminCompleted from "../../pages/admin/requests/AdminCompleted";
+import AdminCancelled from "../../pages/admin/requests/AdminCancelled";
+import AdminVolunteers from "../../pages/admin/volunteers/AdminVolunteers";
+import PendingVolunteers from "../../pages/admin/volunteers/PendingVolunteers";
 import AdminStats from "../../pages/admin/AdminStats";
-import RequestDetail from "../../pages/admin/RequestDetail";
+import RequestDetail from "../../pages/admin/requests/RequestDetail";
 
 import logo from "../../assets/logo.png";
 import { PUBLIC_STATUS_GROUPS } from "../../helpers/requestStatus";
@@ -27,21 +29,26 @@ export default function AdminLayout() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+  const [volunteers, setVolunteers] = useState<any[]>([]);
+  const [volunteersLoading, setVolunteersLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (u) => {
+    let unsubRequests: (() => void) | null = null;
+
+    const unsubAuth = onAuthStateChanged(auth, async (u) => {
       if (!u) {
         navigate("/login", { replace: true });
       } else {
         setUser(u);
 
+        // Requests listener
         const q = query(
           collection(db, "deviceRequests"),
           orderBy("createdAt", "desc")
         );
-
-        const unsubRequests = onSnapshot(q, (snapshot) => {
+        unsubRequests = onSnapshot(q, (snapshot) => {
           const data = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data()
@@ -50,11 +57,32 @@ export default function AdminLayout() {
           setLoading(false);
         });
 
-        return () => unsubRequests();
+        // Volunteers fetch
+        const snap = await getDocs(collection(db, "users"));
+        const usersData = await Promise.all(
+          snap.docs.map(async (docSnap) => {
+            const user = { id: docSnap.id, ...docSnap.data() };
+            const profileRef = doc(db, `users/${docSnap.id}/private/profile`);
+            const profileSnap = await getDoc(profileRef);
+            const profile = profileSnap.exists() ? profileSnap.data() : {};
+            return {
+              ...user,
+              ...profile,
+              profileUpdatedAt: profile.updatedAt?.toDate
+                ? profile.updatedAt.toDate()
+                : null
+            };
+          })
+        );
+        setVolunteers(usersData);
+        setVolunteersLoading(false);
       }
     });
 
-    return () => unsubAuth();
+    return () => {
+      unsubAuth();
+      if (unsubRequests) unsubRequests();
+    };
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -62,7 +90,7 @@ export default function AdminLayout() {
     navigate("/login", { replace: true });
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading || volunteersLoading) return <div>Loading...</div>;
 
   // ===== CLASSIFICAZIONE RICHIESTE =====
 
@@ -90,46 +118,66 @@ export default function AdminLayout() {
     PUBLIC_STATUS_GROUPS["annullate / non completabili"].includes(r.status)
   );
 
+  // Filtra i volontari non attivi
+  const pendingVolunteers = volunteers.filter(v => !v.active);
+
   const panelMenuItems = [
     {
-      label: `Tutte (${requests.length})`,
-      icon: "pi pi-home",
-      command: () => navigate("/admin"),
-    },
-    {
-      label: `Da gestire (${triageRequests.length})`,
-      icon: "pi pi-inbox",
-      command: () => navigate("/admin/triage"),
-    },
-    {
-      label: `In attesa volontario (${pendingRequests.length})`,
-      icon: "pi pi-clock",
-      command: () => navigate("/admin/pending"),
-    },
-    {
-      label: `In produzione (${productionRequests.length})`,
-      icon: "pi pi-cog",
-      command: () => navigate("/admin/production"),
-    },
-    {
-      label: `Spedizioni (${shippingRequests.length})`,
-      icon: "pi pi-truck",
-      command: () => navigate("/admin/shipping"),
-    },
-    {
-      label: `Completate (${completedRequests.length})`,
-      icon: "pi pi-check",
-      command: () => navigate("/admin/completed"),
-    },
-    {
-      label: `Annullate / KO (${cancelledRequests.length})`,
-      icon: "pi pi-times",
-      command: () => navigate("/admin/cancelled"),
+      label: "Richieste",
+      icon: "pi pi-folder",
+      items: [
+        {
+          label: `Tutte (${requests.length})`,
+          icon: "pi pi-home",
+          command: () => navigate("/admin"),
+        },
+        {
+          label: `Da gestire (${triageRequests.length})`,
+          icon: "pi pi-inbox",
+          command: () => navigate("/admin/requests/triage"),
+        },
+        {
+          label: `In attesa volontario (${pendingRequests.length})`,
+          icon: "pi pi-clock",
+          command: () => navigate("/admin/requests/pending"),
+        },
+        {
+          label: `In produzione (${productionRequests.length})`,
+          icon: "pi pi-cog",
+          command: () => navigate("/admin/requests/production"),
+        },
+        {
+          label: `Spedite (${shippingRequests.length})`,
+          icon: "pi pi-truck",
+          command: () => navigate("/admin/requests/shipping"),
+        },
+        {
+          label: `Completate (${completedRequests.length})`,
+          icon: "pi pi-check",
+          command: () => navigate("/admin/requests/completed"),
+        },
+        {
+          label: `Annullate / KO (${cancelledRequests.length})`,
+          icon: "pi pi-times",
+          command: () => navigate("/admin/requests/cancelled"),
+        },
+      ],
     },
     {
       label: "Volontari",
       icon: "pi pi-users",
-      command: () => navigate("/admin/volunteers"),
+      items: [
+        {
+          label: `Elenco (${volunteers.length})`,
+          icon: "pi pi-list",
+          command: () => navigate("/admin/volunteers/all"),
+        },
+        {
+          label: `Attesa attivazione (${pendingVolunteers.length})`,
+          icon: "pi pi-clock",
+          command: () => navigate("/admin/volunteers/pending"),
+        },
+      ],
     },
     {
       label: "Statistiche",
@@ -140,13 +188,17 @@ export default function AdminLayout() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {/* Sidebar */}
-      <div
-        style={{
-          width: 250,
-          background: "#f4f4f4",
-          borderRight: "1px solid #ddd",
-        }}
+      {/* Sidebar Toggle Button (visible on small screens) */}
+
+
+      <Sidebar
+        visible={sidebarVisible}
+        onHide={() => setSidebarVisible(false)}
+        showCloseIcon={true}
+        style={{ width: 250, padding: 0 }}
+        modal={true}
+        blockScroll={true}
+        className="admin-sidebar"
       >
         <div
           style={{
@@ -161,9 +213,35 @@ export default function AdminLayout() {
           <img src={logo} alt="Logo" style={{ width: 32, height: 32 }} />
           Admin
         </div>
-
         <PanelMenu model={panelMenuItems} />
+      </Sidebar>
+
+      {/* Desktop Sidebar */}
+      {/* <div
+      className="admin-sidebar-desktop"
+      style={{
+        width: 250,
+        background: "#f4f4f4",
+        borderRight: "1px solid #ddd",
+        display: "flex",
+        flexDirection: "column",
+      }}
+      >
+      <div
+        style={{
+        padding: 16,
+        fontWeight: "bold",
+        fontSize: 18,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        }}
+      >
+        <img src={logo} alt="Logo" style={{ width: 32, height: 32 }} />
+        Admin
       </div>
+      <PanelMenu model={panelMenuItems} />
+      </div> */}
 
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
@@ -179,6 +257,18 @@ export default function AdminLayout() {
             background: "#fff",
           }}
         >
+          <Button
+            icon="pi pi-bars"
+            className="p-button-text"
+            style={{
+              border: "1px solid #ddd", // bordo visibile
+              borderRadius: 4,
+              background: "#fff",
+            }}
+            aria-label="Apri menu"
+            onClick={() => setSidebarVisible(true)}
+            id="sidebar-toggle-btn"
+          />
           <div style={{ fontWeight: "bold", fontSize: 20 }}>
             e-Nable Italia Admin
           </div>
@@ -186,12 +276,12 @@ export default function AdminLayout() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {user && (
               <>
-                <Avatar
-                  label={user.email?.[0]?.toUpperCase() || "U"}
-                        size="normal"
-                  shape="circle"
-                />
-                <span>{user.email}</span>
+          <Avatar
+            label={user.email?.[0]?.toUpperCase() || "U"}
+            size="normal"
+            shape="circle"
+          />
+          <span>{user.email}</span>
               </>
             )}
 
@@ -220,17 +310,18 @@ export default function AdminLayout() {
           }}
         >
           <Routes>
-            <Route index element={<AdminAll requests={requests} />} />
-            <Route path="triage" element={<AdminTriage requests={triageRequests} />} />
-            <Route path="pending" element={<AdminPending requests={pendingRequests} />} />
-            <Route path="production" element={<AdminProduction requests={productionRequests} />} />
-            <Route path="shipping" element={<AdminShipping requests={shippingRequests} />} />
-            <Route path="completed" element={<AdminCompleted requests={completedRequests} />} />
-            <Route path="cancelled" element={<AdminCancelled requests={cancelledRequests} />} />
-            <Route path="volunteers" element={<AdminVolunteers />} />
+            <Route path="requests" element={<AdminAll requests={requests} />} />
+            <Route path="requests/triage" element={<AdminTriage requests={triageRequests} />} />
+            <Route path="requests/pending" element={<AdminPending requests={pendingRequests} />} />
+            <Route path="requests/production" element={<AdminProduction requests={productionRequests} />} />
+            <Route path="requests/shipping" element={<AdminShipping requests={shippingRequests} />} />
+            <Route path="requests/completed" element={<AdminCompleted requests={completedRequests} />} />
+            <Route path="requests/cancelled" element={<AdminCancelled requests={cancelledRequests} />} />
+            <Route path="volunteers/all" element={<AdminVolunteers volunteers={volunteers} />} />
+            <Route path="volunteers/pending" element={<PendingVolunteers volunteers={pendingVolunteers} />} />
             <Route path="stats" element={<AdminStats />} />
             <Route path="request/:id" element={<RequestDetail />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
+            <Route path="*" element={<Navigate to="/admin/requests" replace />} />
           </Routes>
         </div>
       </div>

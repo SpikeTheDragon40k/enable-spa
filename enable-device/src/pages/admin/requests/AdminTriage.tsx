@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import RequestTable from "../../components/requests/RequestTable";
+import RequestTable from "../../../components/requests/RequestTable";
 
 export default function AdminTriage({ requests }: { requests: any[] }) {
   const navigate = useNavigate();

@@ -12,18 +12,17 @@ export default function RequestTimeline({ events }: Props) {
       value={events}
       content={(item) => (
         <div>
-          <strong>{item.fromStatus || "—"} → {item.toStatus}</strong>
-          <p>{item.note}</p>
-          {item.timestamp && typeof item.timestamp.toDate === "function" ? (
+            {item.fromStatus === item.toStatus ? (
+            <strong>Aggiornamento / Nota</strong>
+            ) : (
+            <strong>Cambio di stato: {item.fromStatus || "—"} → {item.toStatus}</strong>
+            )}
+          {(item.userName || item.createdBy) && item.timestamp && typeof item.timestamp.toDate === "function" && (
             <div style={{ fontSize: "0.9em", color: "#888" }}>
-              {item.timestamp.toDate().toLocaleString()}
-            </div>
-          ) : null}
-          {item.createdBy && (
-            <div style={{ fontSize: "0.9em", color: "#888" }}>
-              Autore: {item.createdBy}
+              {item.userName || item.createdBy} @ {item.timestamp.toDate().toLocaleString()}
             </div>
           )}
+          <p>{item.note}</p>
         </div>
       )}
     />

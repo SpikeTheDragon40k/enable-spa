@@ -7,6 +7,7 @@ import { PanelMenu } from "primereact/panelmenu";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { Dialog } from "primereact/dialog";
+import { Sidebar } from "primereact/sidebar";
 import logo from "../../assets/logo.png";
 import { PUBLIC_STATUS_GROUPS } from "../../helpers/requestStatus";
 
@@ -30,6 +31,7 @@ export default function VolunteerLayout() {
     const [productionRequests, setProductionRequests] = useState<any[]>([]);
     // const [completedRequests, setCompletedRequests] = useState<any[]>([]);
     const [showInfo, setShowInfo] = useState(false);
+    const [sidebarVisible, setSidebarVisible] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -125,30 +127,66 @@ export default function VolunteerLayout() {
     // Se non attivo, mostra solo il profilo
     if (!active) {
         return (
-            <div style={{ display: "flex", minHeight: "100vh" }}>
-                <div style={{ width: 250, padding: 20, borderRight: "1px solid #ddd" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <div style={{ display: "flex", height: "100vh" }}>
+                {/* Sidebar mobile/nascondibile */}
+                <Sidebar
+                    visible={sidebarVisible}
+                    onHide={() => setSidebarVisible(false)}
+                    showCloseIcon={true}
+                    style={{ width: 250, padding: 0 }}
+                    modal={true}
+                    blockScroll={true}
+                    className="volunteer-sidebar"
+                >
+                    <div
+                        style={{
+                            padding: 16,
+                            fontWeight: "bold",
+                            fontSize: 18,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                        }}
+                    >
                         <img src={logo} alt="Logo" style={{ width: 32, height: 32 }} />
-                        <h3 style={{ margin: 0 }}>Volunteer</h3>
+                        Volunteer
                     </div>
                     <PanelMenu model={[{
                         label: "Le mie informazioni",
                         icon: "pi pi-user",
                         command: () => navigate("/volunteer/profile")
                     }]} />
-                </div>
+                </Sidebar>
+
+                {/* Main */}
                 <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                     {/* Topbar */}
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "0 24px",
-                        height: 60,
-                        borderBottom: "1px solid #ddd",
-                        background: "#fff"
-                    }}>
-                        <div style={{ fontWeight: "bold", fontSize: 20 }}>e-Nable Italia Volunteer</div>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "0 24px",
+                            height: 60,
+                            borderBottom: "1px solid #ddd",
+                            background: "#fff",
+                        }}
+                    >
+                        <Button
+                            icon="pi pi-bars"
+                            className="p-button-text"
+                            style={{
+                                border: "1px solid #ddd",
+                                borderRadius: 4,
+                                background: "#fff",
+                            }}
+                            aria-label="Apri menu"
+                            onClick={() => setSidebarVisible(true)}
+                            id="sidebar-toggle-btn"
+                        />
+                        <div style={{ fontWeight: "bold", fontSize: 20 }}>
+                            e-Nable Italia Volunteer
+                        </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                             {userEmail && (
                                 <>
@@ -161,11 +199,26 @@ export default function VolunteerLayout() {
                         </div>
                     </div>
                     {/* Content */}
+                    <div style={{ background: "#fffbe6", border: "1px solid #ffe58f", borderRadius: 8, padding: 16, margin: 24, display: "flex", alignItems: "center", gap: 12 }}>
+                        <span className="pi pi-exclamation-triangle" style={{ color: "#faad14", fontSize: 24 }} />
+                        <span style={{ fontWeight: "bold", fontSize: 18, color: "#d48806" }}>
+                            La tua utenza è registrata ma deve essere attivata da un amministratore per diventare pienamente operativa. Riceverai una notifica appena sarà attivata.
+                        </span>
+                    </div>
                     <div style={{ flex: 1, padding: 24, background: "#fafbfc", overflow: "auto" }}>
                         <Routes>
                             <Route path="profile" element={<VolunteerProfile />} />
                             <Route path="*" element={<Navigate to="/volunteer/profile" />} />
                         </Routes>
+                        <Dialog header="Informazioni sull'applicazione" visible={showInfo} style={{ width: "500px" }} onHide={() => setShowInfo(false)}>
+                            <div>
+                                <h3>e-Nable Italia Volunteer</h3>
+                                <p>Versione: 1.0.0</p>
+                                <p>Gestione richieste, profilo volontario e stampanti.</p>
+                                <p>Per supporto o segnalazioni: <a href="mailto:info@e-nableitalia.it">info@e-nableitalia.it</a></p>
+                                <p>© {new Date().getFullYear()} e-Nable Italia</p>
+                            </div>
+                        </Dialog>
                     </div>
                 </div>
             </div>
@@ -173,27 +226,62 @@ export default function VolunteerLayout() {
     }
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh" }}>
-            <div style={{ width: 250, padding: 20, borderRight: "1px solid #ddd" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <div style={{ display: "flex", height: "100vh" }}>
+            {/* Sidebar mobile/nascondibile */}
+            <Sidebar
+                visible={sidebarVisible}
+                onHide={() => setSidebarVisible(false)}
+                showCloseIcon={true}
+                style={{ width: 250, padding: 0 }}
+                modal={true}
+                blockScroll={true}
+                className="volunteer-sidebar"
+            >
+                <div
+                    style={{
+                        padding: 16,
+                        fontWeight: "bold",
+                        fontSize: 18,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                    }}
+                >
                     <img src={logo} alt="Logo" style={{ width: 32, height: 32 }} />
-                    <h3 style={{ margin: 0 }}>Volunteer</h3>
+                    Volunteer
                 </div>
                 <PanelMenu model={items} />
-            </div>
+            </Sidebar>
 
+            {/* Main */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 {/* Topbar */}
-                <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 24px",
-                    height: 60,
-                    borderBottom: "1px solid #ddd",
-                    background: "#fff"
-                }}>
-                    <div style={{ fontWeight: "bold", fontSize: 20 }}>e-Nable Italia Volunteer</div>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "0 24px",
+                        height: 60,
+                        borderBottom: "1px solid #ddd",
+                        background: "#fff",
+                    }}
+                >
+                    <Button
+                        icon="pi pi-bars"
+                        className="p-button-text"
+                        style={{
+                            border: "1px solid #ddd",
+                            borderRadius: 4,
+                            background: "#fff",
+                        }}
+                        aria-label="Apri menu"
+                        onClick={() => setSidebarVisible(true)}
+                        id="sidebar-toggle-btn"
+                    />
+                    <div style={{ fontWeight: "bold", fontSize: 20 }}>
+                        e-Nable Italia Volunteer
+                    </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                         {userEmail && (
                             <>
@@ -206,7 +294,14 @@ export default function VolunteerLayout() {
                     </div>
                 </div>
                 {/* Content */}
-                <div style={{ flex: 1, padding: 24, background: "#fafbfc", overflow: "auto" }}>
+                <div
+                    style={{
+                        flex: 1,
+                        padding: 24,
+                        background: "#fafbfc",
+                        overflow: "auto",
+                    }}
+                >
                     <Routes>
                         <Route index element={<VolunteerDashboard />} />
                         <Route path="my-requests" element={<MyRequests requests={requests} />} />

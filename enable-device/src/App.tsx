@@ -3,6 +3,9 @@ import Login from "./pages/Login";
 import AdminLayout from "./components/layout/AdminLayout";
 import VolunteerLayout from "./components/layout/VolunteerLayout";
 import Register from "./pages/Register";
+import CompleteRegistration from "./pages/CompleteRegistration";
+import SetPassword from "./pages/SetPassword";
+import Home from "./pages/Home";
 
 export default function App() {
   return (
@@ -12,6 +15,9 @@ export default function App() {
         <Route path="/admin/*" element={<AdminLayout />} />
         <Route path="/volunteer/*" element={<VolunteerLayout />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/complete-registration" element={<CompleteRegistration />} />
+        <Route path="/set-password" element={<SetPassword />} />
+        <Route path="/home" element={<Home />} />
         <Route path="*" element={<Login />} />
       </Routes>
     </BrowserRouter>

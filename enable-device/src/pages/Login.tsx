@@ -1,13 +1,12 @@
 import { useRef, useState } from "react";
 import logo from "../assets/logo.png";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../firebase";
+import { auth, functions, googleProvider } from "../firebase";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
 import { Toast } from "primereact/toast";
+import { httpsCallable } from "firebase/functions";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,25 +16,8 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const uid = credential.user.uid;
-
-      const userDoc = await getDoc(doc(db, "users", uid));
-
-      if (!userDoc.exists()) {
-        navigate("/login");
-        return;
-      }
-
-      const role = userDoc.data().role;
-
-      if (role === "admin") {
-        navigate("/admin");
-      } else if (role === "volunteer") {
-        navigate("/volunteer");
-      } else {
-        navigate("/login");
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/home");
     } catch (err) {
       // Usa un toast per il messaggio di errore
       // Assicurati di importare e configurare il Toast di PrimeReact
@@ -53,6 +35,12 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+
+      // user auto provisioning on backend
+      const autoprovisioning = httpsCallable(functions, "registerWithIntegratedAuth");
+      await autoprovisioning();
+
+      navigate("/home");
     } catch (err) {
       toast.current?.show({
         severity: "error",
@@ -69,9 +57,9 @@ export default function Login() {
       <Toast ref={toast} />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, justifyContent: "center" }}>
         <img src={logo} alt="Logo" style={{ width: 64, height: 64 }} />
-          <h2>e-Nable Italia</h2>
-          <h3 style={{ color: "#888", textAlign: "center" }}>Portale di Accesso</h3>
-        </div>
+        <h2>e-Nable Italia</h2>
+        <h3 style={{ color: "#888", textAlign: "center" }}>Portale di Accesso</h3>
+      </div>
       <div className="p-fluid">
         <InputText
           placeholder="Email"
@@ -104,7 +92,7 @@ export default function Login() {
           Se non sei registrato, puoi <b>registrarti automaticamente</b> cliccando su <b>"Continua con Google"</b>
           oppure <b>registrarti manualmente</b> tramite il <b style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("/register")}>link di registrazione nuovo utente</b>.
         </span>
-      </div>    
+      </div>
     </div>
   );
 }
