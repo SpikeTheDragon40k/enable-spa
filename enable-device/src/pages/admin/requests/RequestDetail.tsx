@@ -10,6 +10,7 @@ import RequestTimeline from "../../../components/timeline/RequestTimeline";
 import { Toast } from "primereact/toast";
 import { Panel } from "primereact/panel";
 import { Dialog } from "primereact/dialog";
+import { Badge } from "primereact/badge";
 
 export default function RequestDetail() {
   const { id } = useParams();
@@ -21,18 +22,58 @@ export default function RequestDetail() {
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [showChangeStatusDialog, setShowChangeStatusDialog] = useState(false);
   const [showAssignVolunteerDialog, setShowAssignVolunteerDialog] = useState(false);
+  const [showAddNoteDialog, setShowAddNoteDialog] = useState(false);
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [selectedVolunteer, setSelectedVolunteer] = useState<any>(null);
+  const [noteText, setNoteText] = useState("");
   const toast = useRef<any>(null);
+
+  /**
+   * Recupera il nome completo di un utente dato il suo userId.
+   * Se non trova il profilo privato, ritorna lo userId.
+   */
+  async function getUserFullName(userId: string): Promise<string> {
+    const profileRef = doc(db, "users", userId, "private", "profile");
+    const profileSnap = await getDoc(profileRef);
+    if (profileSnap.exists()) {
+      const data = profileSnap.data();
+      const firstName = data.firstName || "";
+      const lastName = data.lastName || "";
+      const fullName = `${firstName} ${lastName}`.trim();
+      return fullName || userId;
+    }
+    return userId;
+  }
 
   const loadData = useCallback(async () => {
     if (!id) return;
     const docSnap = await getDoc(doc(db, "deviceRequests", id));
-    setRequest(docSnap.data());
-
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.assignedVolunteer) {
+        const volunteerName = await getUserFullName(data.assignedVolunteer);
+        setRequest({
+          ...data,
+          assignedVolunteerName: volunteerName,
+        });
+      } else {
+        setRequest(data);
+      }
+    } else {
+      toast.current?.show({
+        severity: "error",
+        summary: "Errore",
+        detail: "Richiesta non trovata.",
+        life: 4000,
+      });
+      setRequest(null);
+      return;
+    }
     // Load private data
     const privateSnap = await getDoc(doc(db, "deviceRequests", id, "private", "data"));
     setPrivateData(privateSnap.exists() ? privateSnap.data() : null);
+
+
 
     const q = query(
       collection(db, "deviceRequests", id, "events"),
@@ -41,30 +82,13 @@ export default function RequestDetail() {
     const snapshot = await getDocs(q);
     const eventsData = snapshot.docs.map((doc) => doc.data());
 
-    // Ottieni tutti gli uid unici da createdBy
-    const userIds = Array.from(
-      new Set(eventsData.map((ev) => ev.createdBy).filter(Boolean))
+    // Arricchisci gli eventi con nome e cognome usando getUserFullName
+    const enrichedEvents = await Promise.all(
+      eventsData.map(async (ev) => ({
+        ...ev,
+        userName: ev.createdBy ? await getUserFullName(ev.createdBy) : "-"
+      }))
     );
-
-    // Recupera i dati degli utenti
-    const userDocs = await Promise.all(
-      userIds.map((uid) => getDoc(doc(db, `users/${uid}/private/profile`)))
-    );
-
-    const usersMap = userDocs.reduce((acc, userDoc, idx) => {
-      if (userDoc.exists()) {
-        acc[userIds[idx]] = userDoc.data() || {};
-      }
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Arricchisci gli eventi con nome e cognome
-    const enrichedEvents = eventsData.map((ev) => ({
-      ...ev,
-      userName: ev.createdBy && usersMap[ev.createdBy]
-        ? `${usersMap[ev.createdBy].firstName || ""} ${usersMap[ev.createdBy].lastName || ""}`.trim()
-        : ev.createdBy || "-"
-    }));
 
     setEvents(enrichedEvents);
   }, [id]);
@@ -74,14 +98,14 @@ export default function RequestDetail() {
     const usersSnapshot = await getDocs(collection(db, "users"));
     const userProfiles = await Promise.all(
       usersSnapshot.docs
-      .filter((userDoc) => userDoc.data().active === true)
-      .map(async (userDoc) => {
-        const profileSnap = await getDoc(doc(db, "users", userDoc.id, "private", "profile"));
-        if (profileSnap.exists()) {
-        return { id: userDoc.id, ...profileSnap.data() };
-        }
-        return null;
-      })
+        .filter((userDoc) => userDoc.data().active === true)
+        .map(async (userDoc) => {
+          const profileSnap = await getDoc(doc(db, "users", userDoc.id, "private", "profile"));
+          if (profileSnap.exists()) {
+            return { id: userDoc.id, ...profileSnap.data() };
+          }
+          return null;
+        })
     );
 
     // Filtra solo i volontari e ordina per firstName
@@ -115,22 +139,63 @@ export default function RequestDetail() {
 
   const handleAssignVolunteer = async () => {
     if (!selectedVolunteer) return;
-    if (!id) return; // Ensure id is defined
-    await getDoc(doc(db, "deviceRequests", id)); // just to ensure request exists
-    console.log("Assigning volunteer:", selectedVolunteer);
-    await (await import("firebase/firestore")).updateDoc(
-      doc(db, "deviceRequests", id),
-      { assignedVolunteer: selectedVolunteer.id }
-    );
-    toast.current?.show({
-      severity: "success",
-      summary: "Volontario associato",
-      detail: "Il volontario è stato associato alla richiesta.",
-      life: 3000,
-    });
-    setShowAssignVolunteerDialog(false);
-    setSelectedVolunteer(null);
+    if (!id) return;
+    try {
+      const fn = httpsCallable(functions, "assignVolunteer");
+      await fn({
+        deviceId: id,
+        userId: selectedVolunteer.id,
+      });
+      toast.current?.show({
+        severity: "success",
+        summary: "Volontario associato",
+        detail: "Il volontario è stato associato alla richiesta.",
+        life: 3000,
+      });
+      setShowAssignVolunteerDialog(false);
+      setSelectedVolunteer(null);
+    } catch (error: any) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Errore",
+        detail: error?.message || "Errore durante l'associazione del volontario.",
+        life: 4000,
+      });
+    }
     await loadData();
+  };
+
+  const handleAddNote = async () => {
+    if (!id || !noteText.trim()) return;
+    try {
+      // Recupera lo stato precedente (ultimo evento)
+      const lastEvent = events[0];
+      const previousStatus = lastEvent?.status || request.status || "sconosciuto";
+
+      // Aggiungi evento come cambiamento di stato con lo stesso stato precedente e nota
+      const fn = httpsCallable(functions, "changeStatus");
+      await fn({
+        requestId: id,
+        newStatus: previousStatus,
+        note: noteText.trim()
+      });
+      toast.current?.show({
+        severity: "success",
+        summary: "Nota aggiunta",
+        detail: "Nota aggiunta alla cronologia.",
+        life: 3000,
+      });
+      setShowAddNoteDialog(false);
+      setNoteText("");
+      await loadData();
+    } catch (error: any) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Errore",
+        detail: error?.message || "Errore durante l'aggiunta della nota.",
+        life: 4000,
+      });
+    }
   };
 
   if (!request) return <div>Loading...</div>;
@@ -151,7 +216,10 @@ export default function RequestDetail() {
                 <strong>Device:</strong> {request.deviceType}
               </div>
               <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
-                <strong>Status:</strong> {request.status}
+                <strong>Status:</strong>
+                <span style={{ marginLeft: 8 }}>
+                  <Badge value={request.status} severity="info" />
+                </span>
                 <Button
                   label="Cambia Stato"
                   icon="pi pi-pencil"
@@ -161,12 +229,24 @@ export default function RequestDetail() {
                 />
               </div>
               <div style={{ marginBottom: 10 }}>
-                <strong>Stato pubblico:</strong> {request.publicStatus || "-"}
+                <strong>Stato pubblico:</strong>
+                {request.publicStatus ? (
+                  <span style={{ marginLeft: 8 }}>
+                    <Badge value={request.publicStatus} severity="warning" />
+                  </span>
+                ) : (
+                  <span style={{ marginLeft: 8 }}>-</span>
+                )}
               </div>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ marginBottom: 10 }}>
-                <strong>Volontario associato:</strong> {request.assignedVolunteer || "-"}
+                <strong>Volontario associato:</strong>{" "}
+                {request.assignedVolunteerName
+                  ? request.assignedVolunteerName
+                  : request.assignedVolunteer
+                    ? request.assignedVolunteer
+                    : "-"}
                 <Button
                   label="Associa volontario"
                   icon="pi pi-pencil"
@@ -194,7 +274,7 @@ export default function RequestDetail() {
 
       <div className="p-panel p-component" style={{ marginBottom: 30 }}>
         <div className="p-panel-header">
-          <span>Dati privati</span>
+          <span>Dati richiedente (privati)</span>
         </div>
         <div className="p-panel-content">
           {privateData ? (
@@ -231,8 +311,14 @@ export default function RequestDetail() {
       {/* Ultimo stato come panel con bottone e dialog */}
       <Panel
         header={
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span>Ultimo evento</span>
+            <Button
+              label="Aggiungi nota"
+              icon="pi pi-plus"
+              className="p-button-text"
+              onClick={() => setShowAddNoteDialog(true)}
+            />
           </div>
         }
         style={{ marginBottom: 30 }}
@@ -334,9 +420,35 @@ export default function RequestDetail() {
         </div>
       </Dialog>
 
+      {/* Dialog per aggiungere nota */}
+      <Dialog
+        header="Aggiungi nota"
+        visible={showAddNoteDialog}
+        style={{ width: "400px" }}
+        modal
+        onHide={() => setShowAddNoteDialog(false)}
+      >
+        <div style={{ marginBottom: 15 }}>
+          <label htmlFor="noteText" style={{ display: "block", marginBottom: 5 }}>
+            Testo nota
+          </label>
+          <InputTextarea
+            id="noteText"
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            rows={3}
+            style={{ width: "100%" }}
+          />
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <Button label="Annulla" className="p-button-text" onClick={() => setShowAddNoteDialog(false)} />
+          <Button label="Aggiungi" onClick={handleAddNote} disabled={!noteText.trim()} />
+        </div>
+      </Dialog>
+
       {/* Timeline collapsable */}
       <Panel
-        header="Timeline"
+        header="Cronologia gestione richiesta"
         toggleable
         collapsed={!timelineOpen}
         onToggle={() => setTimelineOpen(!timelineOpen)}

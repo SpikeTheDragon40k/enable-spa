@@ -4,6 +4,7 @@ initializeApp();
 
 export {createDeviceRequest} from "./device/createDeviceRequest";
 export {changeStatus} from "./device/changeStatus";
+export {assignVolunteer} from "./device/assignVolunteer";
 export { register, checkRegistration, completeRegistration, registerWithIntegratedAuth } from "./auth/register";
 export { setPassword } from "./auth/setPassword";
 export { activateVolunteers, deactivateVolunteers } from "./volunteer/volunteerState";
