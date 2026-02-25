@@ -318,6 +318,7 @@ export const completeRegistration = onCall(
 export const registerWithIntegratedAuth = onCall(
   { region: REGION },
   async (req) => {
+    try {
     const invokeId = getInvokeId(req);
     console.log(`[registerWithIntegratedAuth] Invoke ID: ${invokeId} - Function called`);
     if (!req.auth?.uid) {
@@ -339,7 +340,7 @@ export const registerWithIntegratedAuth = onCall(
     if (snap.exists) {
       await logSecurityEvent({
         type: "auth",
-        action: "register_integrated_auth",
+        action: "login",
         outcome: "success",
         severity: "low",
         actor: {
@@ -387,6 +388,80 @@ export const registerWithIntegratedAuth = onCall(
     });
 
     return { success: true };
+    } catch (err) {
+      console.error(`[registerWithIntegratedAuth] KO:`, err);
+      await logSecurityEvent({
+        type: "auth",
+        action: "register_integrated_auth",
+        outcome: "failure",
+        severity: "high",
+        actor: {
+          uid: req.auth?.uid ?? "unknown",
+          email: req.auth?.token?.email ?? "unknown", 
+          provider: req?.auth?.token.firebase?.sign_in_provider ?? "unknown"
+        },
+        context: {
+          function: "registerWithIntegratedAuth",
+          invokeId: getInvokeId(req),
+          requestId: req.auth?.uid ?? "unknown"
+        } 
+      });
+      throw err;
+    }
   }
 );
 
+export const doLogin = onCall(
+  { region: REGION },
+  async (req) => {
+    try {
+    const invokeId = getInvokeId(req);
+    console.log(`[doLogin] Invoke ID: ${invokeId} - Function called`);
+    if (!req.auth?.uid) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
+    }
+    const uid = req.auth?.uid ?? "unknown";
+    const email = req.auth?.token?.email ?? "unknown";
+    const provider = req.auth?.token?.firebase?.sign_in_provider ?? "unknown";
+    const ip = req.rawRequest?.ip ?? "unknown";
+
+    await logSecurityEvent({
+      type: "auth",
+      action: "login",
+      outcome: "success",
+      severity: "low",
+      actor: {
+        uid,
+        email,
+        provider,
+        ip,
+      },
+      context: {
+        function: "logLoginEvent",
+        invokeId,
+      },
+    });
+
+    return { logged: true };
+    } catch (err) {
+      console.error(`[doLogin] KO:`, err);
+      await logSecurityEvent({  
+        type: "auth",
+        action: "login",
+        outcome: "failure",
+        severity: "high",
+        actor: {
+          uid: req.auth?.uid ?? "unknown",
+          email: req.auth?.token?.email ?? "unknown", 
+          provider: req.auth?.token?.firebase?.sign_in_provider ?? "unknown",
+          ip: req.rawRequest?.ip ?? "unknown",
+        },
+        context: {
+          function: "logLoginEvent",
+          invokeId: getInvokeId(req),
+        },
+      });
+      throw err;
+    }
+  }
+);

@@ -433,6 +433,14 @@ export default function RequestDevice() {
                                 Ti ricontatteremo via email il prima possibile per aggiornarti sullo stato della richiesta o per eventuali approfondimenti.
                                 <br /><br />
                                 Per qualsiasi dubbio puoi scriverci a <a href="mailto:device@e-nableitalia.it" style={{ color: "#1976d2", textDecoration: "underline" }}>device@e-nableitalia.it</a> o chiamarci al <a href="tel:+393291003302" style={{ color: "#1976d2", textDecoration: "underline" }}>+39-329-1003302</a>.
+                                <div style={{ marginTop: 24 }}>
+                                    <Button
+                                        label="Chiudi pagina"
+                                        icon="pi pi-times"
+                                        onClick={() => window.close()}
+                                        className="p-button-secondary"
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
