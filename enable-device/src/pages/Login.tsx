@@ -121,7 +121,7 @@ export default function Login() {
           }}
         >
           <span>
-            Benvenuto nel portale dedicato ai volontari della community di<br /> 
+            Benvenuto nel portale dedicato ai volontari della community di<br />
             e-Nable Italia!<br />
             <a
               href="https://e-nableitalia.it"
@@ -135,6 +135,20 @@ export default function Login() {
         </div>
       </div>
       <div className="p-fluid" style={{ maxWidth: 400, margin: "0 auto" }}>
+        <Button
+          label="Accedi con Google"
+          icon="pi pi-google"
+          onClick={handleGoogleLogin}
+          className="w-full mb-3"
+          style={{
+            background: "#fff",
+            color: "#0050b3",
+            border: "2px solid #0050b3",
+          }}
+        />
+        <div style={{ textAlign: "center", margin: "16px 0" }}>
+          <span>Oppure accedi con le tue credenziali</span>
+        </div>
         <InputText
           placeholder="Email"
           value={email}
@@ -148,24 +162,43 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           className="mb-3"
         />
-        <Button label="Login" onClick={handleLogin} />
-        <div style={{ textAlign: "center", margin: "16px 0" }}>
-          <span>Oppure accedi con il tuo account Google</span>
-        </div>
-        <Button
-          label="Continua con Google"
-          icon="pi pi-google"
-          onClick={handleGoogleLogin}
-          className="p-button-danger w-full"
-        />
+        <Button label="Login" className="p-button-info"
+          onClick={handleLogin} />
       </div>
 
       <div className="login-info-message" style={{ marginTop: 12, background: "#fffbe6", border: "1px solid #ffe58f", borderRadius: 6, padding: 16, color: "#614700" }}>
-        <strong style={{ display: "block", textAlign: "center" }}>Accesso Volontari</strong><br />
+
+        <strong style={{ display: "block", textAlign: "center" }}>Registrazione e accesso</strong><br />
+        Puoi accedere con il tuo account <b>Google</b> o con <b>le tue credenziali</b>.<br /><br />
+        Se non sei ancora registrato, puoi creare un account in modo semplice:
+        accedendo direttamente con <b>"Accedi con Google"</b> <i>(registrazione automatica)</i>
+        oppure via mail dalla <b
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+          onClick={() => navigate("/register")}
+        >
+          pagina di registrazione
+        </b> <i>(ti verrà inviato un link di conferma via mail)</i>.
+        <br /><br />
+
+        <span style={{ fontStyle: "italic" }}>
+          <strong style={{ display: "block", textAlign: "center" }}>Richieste Device</strong><br />
+          Se sei arrivato qui per richiedere un device, non è necessario registrarsi:
+          puoi farlo direttamente cliccando sul pulsante <b>"Voglio richiedere un device"</b> qui sotto.
+        </span>
+        <br /><br />
+
+        <strong style={{ display: "block", textAlign: "center" }}>
+          Portale Volontari e-Nable Italia
+        </strong><br />
+
         Questo portale è riservato ai volontari della community e-Nable Italia.<br /><br />
 
-        Chiunque desideri entrare a farne parte può farlo, a condizione di conoscere e accettare le regole della community e il relativo codice etico.
-        Tutte le informazioni per i volontari sono disponibili alla pagina dedicata:
+        Chiunque desideri entrare a farne parte può farlo, a condizione di conoscere
+        e accettare le regole della community e il relativo codice etico.<br /><br />
+
+        Se desideri diventare volontario, ti invitiamo a leggere prima le informazioni
+        dedicate alla community:
+
         <a
           href="https://e-nableitalia.it/it_it/informazioni-volontari/"
           target="_blank"
@@ -174,23 +207,6 @@ export default function Login() {
         >
           Informazioni per i volontari
         </a>.<br /><br />
-
-
-        <span style={{ fontStyle: "italic" }}>
-          Puoi accedere con <b>le tue credenziali</b> oppure utilizzando <b>Google</b>.<br /><br />
-          Se non sei ancora registrato, puoi creare un account in modo semplice:
-          accedendo con <b>"Continua con Google"</b> (registrazione automatica)
-          oppure via mail richiedendo il{" "}
-          <b
-            style={{ cursor: "pointer", textDecoration: "underline" }}
-            onClick={() => navigate("/register")}
-          >
-            link di registrazione nuovo utente
-          </b>.
-          <br /><br />
-          Se invece sei arrivato qui per richiedere un device, non è necessario registrarsi:
-          puoi farlo direttamente cliccando sul pulsante <b>"Voglio richiedere un device"</b> qui sotto.
-        </span>
       </div>
       <div style={{ textAlign: "center", marginTop: 24 }}>
         <Button
