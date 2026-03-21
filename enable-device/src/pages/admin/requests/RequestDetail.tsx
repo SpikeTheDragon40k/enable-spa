@@ -35,6 +35,7 @@ export default function RequestDetail() {
    * Se non trova il profilo privato, ritorna lo userId.
    */
   async function getUserFullName(userId: string): Promise<string> {
+    if (!userId || userId.includes("/")) return userId;
     const profileRef = doc(db, "users", userId, "private", "profile");
     const profileSnap = await getDoc(profileRef);
     if (profileSnap.exists()) {
