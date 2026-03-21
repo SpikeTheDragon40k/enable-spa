@@ -12,14 +12,23 @@ export function mapToPublicStatus(status: string): string {
     "personalizzazione",
     "attesa materiali",
     "fabbricazione",
+    "fitting",
     "pronta per spedizione",
     "spedita",
     "followup famiglia"
   ];
 
+  const annullate = [
+    "followup famiglia ko",
+    "followup famiglia troppo piccolo",
+    "annullata",
+    "standby"
+  ];
+
   if (daGestire.includes(status)) return "da gestire";
   if (fabbricazione.includes(status)) return "fabbricazione in corso";
   if (status === "completata") return "completati";
-  return "annullate";
+  if (annullate.includes(status)) return "annullate / non completabili";
+  return "da gestire";
 }
 

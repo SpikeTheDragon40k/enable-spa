@@ -5,7 +5,7 @@ import { ProgressBar } from "primereact/progressbar";
 import { Toast } from "primereact/toast";
 import Papa from "papaparse";
 import { db, functions } from "../../../firebase";
-import { collection, addDoc, doc, setDoc, getDocs, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { Timestamp } from "firebase/firestore";
 import { Dialog } from "primereact/dialog";
@@ -29,7 +29,23 @@ export default function AdminMaintenanceRequests() {
   const [deleteAllLoading, setDeleteAllLoading] = useState(false);
   const [legacyMode, setLegacyMode] = useState(false);
   const [logsTab, setLogsTab] = useState(true);
+  const [updatingDates, setUpdatingDates] = useState(false);
   const toast = useRef<any>(null);
+
+  type PrivateData = {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    recipient?: string;
+    relation?: string;
+    province: string;
+    therapy: boolean;
+    amputationType: string;
+    description?: string;
+    preferences?: string;
+    consentPrivacy: boolean;
+  };
 
   // CSV file input handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +55,7 @@ export default function AdminMaintenanceRequests() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      delimiter: ";",
+      delimiter: legacyMode ? ";" : ",",
       complete: (results: Papa.ParseResult<Record<string, string>>) => {
         setCsvRows(results.data);
         setLogs([]);
@@ -80,6 +96,7 @@ export default function AdminMaintenanceRequests() {
       email: row["Indirizzo email"] || "",
       firstName: firstName || "",
       lastName: lastName || "",
+      phone: row["Telefono"] || "",
       relation: row["Relazione con il destinatario"] || "",
       province: row["Provincia"] || "",
       therapy,
@@ -100,7 +117,7 @@ export default function AdminMaintenanceRequests() {
     };
     // Status change
     const statusChange = {
-      newStatus: row["Stato"] || "",
+      newStatus: (row["Stato"] || "").trim().toLowerCase(),
       note: row["Activity"] || "Import iniziale",
     };
     // Volunteer
@@ -118,7 +135,7 @@ export default function AdminMaintenanceRequests() {
   const transformRowLegacy = (row: any) => {
     // --- createdAt ---
     const createdAt = Timestamp.now();
-    
+
     // --- Split Genitore (Richiedente) ---
     const fullName = (row["Richiedente"] || "").trim();
     const nameParts = fullName.split(" ").filter(Boolean);
@@ -209,7 +226,7 @@ export default function AdminMaintenanceRequests() {
       createdAt,
       devicetype: row["Device"] || "unknown",
       province: row["Provincia"] || "",
-      publicStatus: mapInternalStatusToPublic(mappedStatus),
+      publicStatus: mappedStatus,
     };
 
     return {
@@ -272,44 +289,64 @@ export default function AdminMaintenanceRequests() {
     setSuccessCount(0);
     setErrorCount(0);
 
+    const createFn = httpsCallable<Record<string, unknown>, { requestId: string }>(functions, "createDeviceRequestInternal");
+    const changeStatusFn = httpsCallable(functions, "changeStatus");
+    const assignVolunteerFn = httpsCallable(functions, "assignVolunteer");
+
     let ok = 0, err = 0;
     for (let i = 0; i < csvRows.length; i++) {
       const row = csvRows[i];
       try {
-        const { mainDoc, privateData, statusChange, volunteerName, publicData } = legacyMode ? transformRowLegacy(row) : transformRow(row);
+        const transformed = legacyMode ? transformRowLegacy(row) : transformRow(row);
+        const { mainDoc, statusChange, volunteerName, publicData } = transformed;
+        const privateData: PrivateData = transformed.privateData;
 
-        // Step 1: create deviceRequests doc
-        const docRef = await addDoc(collection(db, "deviceRequests"), mainDoc);
+        // Step 1: create device request via Cloud Function
+        const res = await createFn({
+          source: legacyMode ? "legacy-import" : "import",
+          email: privateData.email,
+          firstName: privateData.firstName,
+          lastName: privateData.lastName,
+          phone: privateData.phone,
+          relation: privateData.relation,
+          province: privateData.province,
+          therapy: privateData.therapy,
+          amputationType: privateData.amputationType,
+          description: privateData.description,
+          preferences: privateData.preferences,
+          consentPrivacy: privateData.consentPrivacy,
+          ...(privateData.recipient && { recipient: privateData.recipient }),
+          age: mainDoc.age,
+          gender: mainDoc.gender,
+          devicetype: publicData.devicetype,
+        });
+        const requestId = res.data.requestId;
 
-        // Step 2: create private/data subdoc
-        await setDoc(doc(db, "deviceRequests", docRef.id, "private", "data"), privateData);
-
-        // Step 3: call changeStatus function
-        const changeStatusFn = httpsCallable(functions, "changeStatus");
-
+        // Step 2: call changeStatus function
         if (Array.isArray(statusChange)) {
           for (const sc of statusChange) {
+            if (!sc.newStatus) throw new Error("Missing status");
             await changeStatusFn({
-              requestId: docRef.id,
+              requestId,
               newStatus: sc.newStatus,
               note: sc.note,
             });
           }
         } else {
+          if (!statusChange.newStatus) throw new Error("Missing status");
           await changeStatusFn({
-            requestId: docRef.id,
+            requestId,
             newStatus: statusChange.newStatus,
             note: statusChange.note,
           });
         }
 
-        // Step 4: assign volunteer if present
+        // Step 3: assign volunteer if present
         if (volunteerName) {
           const userId = await findVolunteerId(volunteerName);
-          const assignVolunteerFn = httpsCallable(functions, "assignVolunteer");
           if (userId) {
             await assignVolunteerFn({
-              deviceId: docRef.id,
+              deviceId: requestId,
               userId,
             });
             setLogs((prev) => [
@@ -318,7 +355,7 @@ export default function AdminMaintenanceRequests() {
             ]);
           } else {
             await assignVolunteerFn({
-              deviceId: docRef.id,
+              deviceId: requestId,
               userId: volunteerName, // Passiamo il nome come userId per log/error handling lato funzione
             });
             setLogs((prev) => [
@@ -328,17 +365,15 @@ export default function AdminMaintenanceRequests() {
           }
         }
 
-        await setDoc(doc(db, "publicDeviceRequests", docRef.id), publicData);
-
         setLogs((prev) => [
           ...prev,
-          `Row ${i + 1}: Import OK (id: ${docRef.id})`,
+          `Row ${i + 1}: Import OK (id: ${requestId})`,
         ]);
         ok++;
-      } catch (error: any) {
+      } catch (error: unknown) {
         setLogs((prev) => [
           ...prev,
-          `Row ${i + 1}: ERROR - ${error?.message || String(error)}`,
+          `Row ${i + 1}: ERROR - ${(error as { message?: string })?.message || String(error)}`,
         ]);
         err++;
       }
@@ -355,12 +390,99 @@ export default function AdminMaintenanceRequests() {
     });
   };
 
+  // Parse date string formatted as "25/02/2024 17.57.38"
+  const parseLegacyDate = (raw: string): Timestamp | null => {
+    if (!raw) return null;
+    const [datePart, timePart] = raw.trim().split(" ");
+    if (!datePart) return null;
+    const [day, month, year] = datePart.split("/").map(Number);
+    const [h = 0, m = 0, s = 0] = (timePart || "").split(".").map(Number);
+    const d = new Date(year, month - 1, day, h, m, s);
+    if (isNaN(d.getTime())) return null;
+    return Timestamp.fromDate(d);
+  };
+
+  // Update createdAt on existing "import" requests matched by email from CSV
+  const handleUpdateDates = async () => {
+    if (!csvRows.length) return;
+    setUpdatingDates(true);
+    setLogs([]);
+
+    try {
+      // Load all deviceRequests with createdBy === "import"
+      const requestsSnap = await getDocs(collection(db, "deviceRequests"));
+      const importDocs = requestsSnap.docs.filter(d => d.data().createdBy === "import");
+
+      // For each, load private/data to get email → build map email -> id
+      const emailToId = new Map<string, string>();
+      for (const reqDoc of importDocs) {
+        const privateSnap = await getDocs(collection(db, `deviceRequests/${reqDoc.id}/private`));
+        for (const p of privateSnap.docs) {
+          if (p.id === "data") {
+            const email = (p.data().email || "").toLowerCase().trim();
+            if (email) emailToId.set(email, reqDoc.id);
+          }
+        }
+      }
+
+      let ok = 0, notFound = 0, err = 0;
+      const newLogs: string[] = [];
+
+      for (let i = 0; i < csvRows.length; i++) {
+        const row = csvRows[i];
+        const email = (row["Indirizzo email"] || "").toLowerCase().trim();
+        const rawDate = row["Informazioni cronologiche"] || "";
+        const ts = parseLegacyDate(rawDate);
+
+        if (!ts) {
+          newLogs.push(`Row ${i + 1}: SKIP - data non valida ("${rawDate}")`);
+          notFound++;
+          continue;
+        }
+        const requestId = emailToId.get(email);
+        if (!requestId) {
+          newLogs.push(`Row ${i + 1}: NOT FOUND - nessuna richiesta per email "${email}"`);
+          notFound++;
+          continue;
+        }
+        try {
+          await updateDoc(doc(db, "deviceRequests", requestId), { createdAt: ts, updatedAt: ts });
+          await updateDoc(doc(db, "publicDeviceRequests", requestId), { createdAt: ts });
+          newLogs.push(`Row ${i + 1}: OK - aggiornato ${requestId} → ${rawDate}`);
+          ok++;
+        } catch (e: unknown) {
+          newLogs.push(`Row ${i + 1}: ERROR - ${(e as { message?: string })?.message || String(e)}`);
+          err++;
+        }
+      }
+
+      setLogs(newLogs);
+      toast.current?.show({
+        severity: err === 0 ? "success" : "warn",
+        summary: "Aggiornamento date completato",
+        detail: `OK: ${ok}, Non trovati: ${notFound}, Errori: ${err}`,
+        life: 5000,
+      });
+    } catch (e: unknown) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Errore",
+        detail: (e as { message?: string })?.message || String(e),
+        life: 4000,
+      });
+    } finally {
+      setUpdatingDates(false);
+    }
+  };
+
   // Delete all deviceRequests and subcollections
   const handleDeleteAll = async () => {
     setDeleteAllLoading(true);
     try {
       const requestsSnap = await getDocs(collection(db, "deviceRequests"));
       for (const reqDoc of requestsSnap.docs) {
+        // Skip legacy imports
+        //if (reqDoc.data().createdBy === "legacy-import") continue;
         // Delete private/data
         await deleteDoc(doc(db, "deviceRequests", reqDoc.id, "private", "data"));
         // Delete events
@@ -476,14 +598,22 @@ export default function AdminMaintenanceRequests() {
             label="Dry Run"
             icon="pi pi-search"
             onClick={handleDryRun}
-            disabled={!csvRows.length || importing}
+            disabled={!csvRows.length || importing || updatingDates}
             className="p-button-secondary"
           />
           <Button
             label="Start Import"
             icon="pi pi-upload"
             onClick={handleImport}
-            disabled={!csvRows.length || importing}
+            disabled={!csvRows.length || importing || updatingDates}
+          />
+          <Button
+            label="Aggiorna date"
+            icon="pi pi-calendar"
+            onClick={handleUpdateDates}
+            disabled={!csvRows.length || importing || updatingDates}
+            loading={updatingDates}
+            className="p-button-warning"
           />
         </div>
         <div style={{ marginBottom: 12 }}>
@@ -497,31 +627,31 @@ export default function AdminMaintenanceRequests() {
           <ProgressBar value={progress} showValue={true} style={{ marginBottom: 16 }} />
         )}
         <Panel header="Risultati" style={{ overflowY: "auto" }}>
-              <TabView activeIndex={logsTab ? 0 : 1} onTabChange={e => setLogsTab(e.index === 0)}>
-                <TabPanel header="Log importazione">
-                  <Panel header="" style={{ boxShadow: "none", marginBottom: 0 }}>
-                    <pre style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>
-                      {logs.map((log, idx) => (
-                        <div key={idx}>{log}</div>
-                      ))}
-                    </pre>
-                  </Panel>
-                </TabPanel>
-                <TabPanel header="Parsed Data">
-                  <Panel header="" style={{ boxShadow: "none", marginBottom: 0 }}>
-                    <pre style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>
-                      {parsedData.map((row, idx) => (
-                        <div key={idx}>
-                          {row.error
-                            ? `Row ${idx + 1}: ERROR - ${row.error}`
-                            : `Row ${idx + 1}: ${JSON.stringify(row.obj, null, 2)}`}
-                        </div>
-                      ))}
-                    </pre>
-                  </Panel>
-                </TabPanel>
-              </TabView>
-              
+          <TabView activeIndex={logsTab ? 0 : 1} onTabChange={e => setLogsTab(e.index === 0)}>
+            <TabPanel header="Log importazione">
+              <Panel header="" style={{ boxShadow: "none", marginBottom: 0 }}>
+                <pre style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>
+                  {logs.map((log, idx) => (
+                    <div key={idx}>{log}</div>
+                  ))}
+                </pre>
+              </Panel>
+            </TabPanel>
+            <TabPanel header="Parsed Data">
+              <Panel header="" style={{ boxShadow: "none", marginBottom: 0 }}>
+                <pre style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>
+                  {parsedData.map((row, idx) => (
+                    <div key={idx}>
+                      {row.error
+                        ? `Row ${idx + 1}: ERROR - ${row.error}`
+                        : `Row ${idx + 1}: ${JSON.stringify(row.obj, null, 2)}`}
+                    </div>
+                  ))}
+                </pre>
+              </Panel>
+            </TabPanel>
+          </TabView>
+
         </Panel>
       </Panel>
     </div>

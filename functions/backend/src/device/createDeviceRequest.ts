@@ -10,6 +10,13 @@ import { sendTelegramMessage } from "../utils/telegram";
 
 const REGION = "europe-west1";
 
+function getAgeRange(age: number): string {
+  if (age <= 6) return "0-6";
+  if (age <= 12) return "7-12";
+  if (age <= 18) return "13-18";
+  return "18+";
+}
+
 /**
  * Cloud Function to handle device request creation from a public form.
  *
@@ -127,9 +134,19 @@ export const createDeviceRequest = onCall(
 
       const db = getFirestore();
       const requestRef = db.collection("deviceRequests").doc();
+      const counterRef = db.collection("counters").doc("deviceRequests");
 
       console.log(`[createDeviceRequest] Creating device request document ${requestRef.id}`);
       await db.runTransaction(async (tx) => {
+        // Read counter
+        const counterSnap = await tx.get(counterRef);
+        let newSeqId = 1;
+        if (counterSnap.exists) {
+          newSeqId = (counterSnap.data()?.lastId || 0) + 1;
+        }
+        tx.set(counterRef, { lastId: newSeqId });
+        const requestNumber = `REQ-${String(newSeqId).padStart(6, "0")}`;
+
         tx.set(requestRef, {
           age: data.age || null,
           gender: data.gender || null,
@@ -138,7 +155,9 @@ export const createDeviceRequest = onCall(
           assignedVolunteer: null,
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
-          createdBy: "public-form"
+          createdBy: "public-form",
+          seqId: newSeqId,
+          requestNumber
         });
 
         tx.set(requestRef.collection("private").doc("data"), {
@@ -169,7 +188,10 @@ export const createDeviceRequest = onCall(
           {
             province: data.province,
             publicStatus: mapToPublicStatus("inviata"),
-            createdAt: FieldValue.serverTimestamp()
+            createdAt: FieldValue.serverTimestamp(),
+            devicetype: data.devicetype || "unknown",
+            requestNumber,
+            ageRange: data.age ? getAgeRange(Number(data.age)) : null
           }
         );
       });

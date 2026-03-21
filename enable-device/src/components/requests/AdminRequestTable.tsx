@@ -3,9 +3,12 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Calendar } from "primereact/calendar";
+import { Dropdown } from "primereact/dropdown";
+import { Toolbar } from "primereact/toolbar";
 import { useNavigate } from "react-router-dom";
-import { db } from "../../firebase";
+import { db, functions } from "../../firebase";
 import { doc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
@@ -24,6 +27,10 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
   const toast = useRef<Toast>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<RequestRow[]>([]);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const handleOpen = (id: string) => {
     navigate(`/admin/request/${id}`);
@@ -92,6 +99,31 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
     publicStatus?: string;
     [key: string]: any;
   }
+
+  const handleBulkChange = async () => {
+    if (!bulkStatus || !selectedRows.length) return;
+    setBulkLoading(true);
+    const changeStatusFn = httpsCallable(functions, "changeStatus");
+    let ok = 0, err = 0;
+    for (const row of selectedRows) {
+      try {
+        await changeStatusFn({ requestId: row.id, newStatus: bulkStatus, note: "Bulk change" });
+        ok++;
+      } catch {
+        err++;
+      }
+    }
+    setBulkLoading(false);
+    setShowBulkDialog(false);
+    setBulkStatus(null);
+    setSelectedRows([]);
+    toast.current?.show({
+      severity: err === 0 ? "success" : "warn",
+      summary: "Bulk Change completato",
+      detail: `Aggiornati: ${ok}${err > 0 ? `, Errori: ${err}` : ""}`,
+      life: 4000,
+    });
+  };
 
   const statusTemplate = (row: RequestRow) => (
     <Tag value={row.status} severity={REQUEST_STATUS_SEVERITY[row.status]} />
@@ -180,37 +212,97 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
           <strong>ID:</strong> {deleteId}
         </div>
       </Dialog>
+      <Dialog
+        header="Bulk Change stato"
+        visible={showBulkDialog}
+        style={{ width: "360px" }}
+        modal
+        onHide={() => { setShowBulkDialog(false); setBulkStatus(null); }}
+        footer={
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <Button
+              label="Annulla"
+              className="p-button-text"
+              onClick={() => { setShowBulkDialog(false); setBulkStatus(null); }}
+              disabled={bulkLoading}
+            />
+            <Button
+              label="Applica"
+              onClick={handleBulkChange}
+              disabled={!bulkStatus || bulkLoading}
+              loading={bulkLoading}
+            />
+          </div>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <span>Selezionate: <strong>{selectedRows.length}</strong> richieste</span>
+          <Dropdown
+            value={bulkStatus}
+            options={REQUEST_STATUSES.map(s => ({ label: s, value: s }))}
+            onChange={e => setBulkStatus(e.value)}
+            placeholder="Scegli nuovo stato"
+            style={{ width: "100%" }}
+          />
+        </div>
+      </Dialog>
+      <Toolbar
+        style={{ marginBottom: 8 }}
+        start={
+          <span style={{ fontSize: 14 }}>
+            {selectedRows.length > 0
+              ? `${selectedRows.length} richieste selezionate`
+              : "Nessuna richiesta selezionata"}
+          </span>
+        }
+        end={
+          <Button
+            label="Bulk Change"
+            icon="pi pi-pencil"
+            onClick={() => setShowBulkDialog(true)}
+            disabled={selectedRows.length === 0}
+          />
+        }
+      />
       <DataTable
         value={tableData}
         paginator
         rows={20}
         rowsPerPageOptions={[10, 20, 50, requests.length]}
-        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+        currentPageReportTemplate="Mostrati {first}-{last} di {totalRecords}"
         filterDisplay="row"
         filters={filters}
         onFilter={(e) => setFilters(e.filters)}
+        sortField="seqId"
+        sortOrder={1}
+        selection={selectedRows}
+        onSelectionChange={e => setSelectedRows(e.value as RequestRow[])}
+        dataKey="id"
       >
+        <Column selectionMode="multiple" style={{ width: "3rem" }} />
         <Column
           header="Copia ID"
           body={(row) => (
-            <Button
-              icon="pi pi-copy"
-              tooltip="Copia ID"
-              tooltipOptions={{ position: "top" }}
-              rounded
-              text
-              onClick={async () => {
-                await navigator.clipboard.writeText(row.id);
-                toast.current?.show({
-                  severity: "info",
-                  summary: "ID copiato",
-                  detail: `ID ${row.id} copiato negli appunti.`,
-                  life: 2000,
-                });
-              }}
-            />
+        <Button
+          icon="pi pi-copy"
+          tooltip="Copia ID"
+          tooltipOptions={{ position: "top" }}
+          rounded
+          text
+          onClick={async () => {
+            await navigator.clipboard.writeText(row.id);
+            toast.current?.show({
+          severity: "info",
+          summary: "ID copiato",
+          detail: `ID ${row.id} copiato negli appunti.`,
+          life: 2000,
+            });
+          }}
+        />
           )}
         />
+        <Column field="seqId" header="ID" filter sortable />
         <Column field="firstName" header="Nome" filter sortable />
         <Column field="lastName" header="Cognome" filter sortable />
         <Column field="age" header="Età" filter sortable />
@@ -221,16 +313,16 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
           filter
           sortable
           body={(row) => (
-            <>
-              <span
-                title={row.amputationType}
-                data-pr-tooltip={row.amputationType}
-                data-pr-position="top"
-                className="amputation-type-tooltip"
-              >
-                {shortAmputationType(row.amputationType)}
-              </span>
-            </>
+        <>
+          <span
+            title={row.amputationType}
+            data-pr-tooltip={row.amputationType}
+            data-pr-position="top"
+            className="amputation-type-tooltip"
+          >
+            {shortAmputationType(row.amputationType)}
+          </span>
+        </>
           )}
         />
         <Column
@@ -251,20 +343,20 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
           field="publicStatus"
           sortable
           filterElement={(options) => (
-            <MultiSelect
-              value={options.value || []}
-              options={Object.keys(PUBLIC_STATUS_SEVERITY).map(s => ({ label: s, value: s }))}
-              onChange={(e) => {
-                setFilters((prev: DataTableFilterMeta) => ({
-                  ...prev,
-                  publicStatus: { value: e.value, matchMode: FilterMatchMode.IN }
-                }));
-                options.filterCallback(e.value, options.index);
-              }}
-              placeholder="Filtra stato pubblico"
-              display="chip"
-              style={{ minWidth: 180 }}
-            />
+        <MultiSelect
+          value={options.value || []}
+          options={Object.keys(PUBLIC_STATUS_SEVERITY).map(s => ({ label: s, value: s }))}
+          onChange={(e) => {
+            setFilters((prev: DataTableFilterMeta) => ({
+          ...prev,
+          publicStatus: { value: e.value, matchMode: FilterMatchMode.IN }
+            }));
+            options.filterCallback(e.value, options.index);
+          }}
+          placeholder="Filtra stato pubblico"
+          display="chip"
+          style={{ minWidth: 180 }}
+        />
           )}
           showFilterMenu={false}
           filterMatchMode={FilterMatchMode.IN}

@@ -268,6 +268,7 @@ export default function VolunteerDashboard() {
               sortField="createdAt"
               sortOrder={-1}
             >
+              <Column field="ageRange" header="Fascia d'età" sortable />
               <Column field="province" header="Provincia" sortable />
               <Column field="publicStatus" header="Stato" sortable />
               <Column

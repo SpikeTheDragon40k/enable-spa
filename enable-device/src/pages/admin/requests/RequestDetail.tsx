@@ -12,6 +12,7 @@ import { Panel } from "primereact/panel";
 import { Dialog } from "primereact/dialog";
 import { Badge } from "primereact/badge";
 import { Toolbar } from "primereact/toolbar";
+import { REQUEST_STATUSES } from "../../../helpers/requestStatus";
 
 export default function RequestDetail() {
   const { id } = useParams();
@@ -123,10 +124,11 @@ export default function RequestDetail() {
 
   const handleChangeStatus = async () => {
     const fn = httpsCallable(functions, "changeStatus");
+    const effectiveNote = note.trim() || `cambio stato da "${request?.status}" a "${newStatus}"`;
     await fn({
       requestId: id,
       newStatus,
-      note
+      note: effectiveNote
     });
     toast.current?.show({
       severity: "success",
@@ -282,6 +284,15 @@ export default function RequestDetail() {
                   ? request.updatedAt.toDate().toLocaleString()
                   : "-"}
               </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>N° richiesta:</strong> {request.requestNumber || "-"}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>ID sequenziale:</strong> {request.seqId ?? "-"}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Età:</strong> {request.age ?? "-"}
+              </div>
             </div>
           </div>
         </div>
@@ -314,6 +325,12 @@ export default function RequestDetail() {
                 </div>
                 <div style={{ marginBottom: 10 }}>
                   <strong>Descrizione:</strong> {privateData.description || "-"}
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <strong>Tipo amputazione:</strong> {privateData.amputationType || "-"}
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <strong>Preferenze:</strong> {privateData.preferences || "-"}
                 </div>
               </div>
             </div>
@@ -370,13 +387,7 @@ export default function RequestDetail() {
         <div style={{ marginBottom: 15 }}>
           <Dropdown
             value={newStatus}
-            options={[
-              "famiglia contattata",
-              "definizione richiesta",
-              "valutazione fattibilità",
-              "attesa volontario",
-              "annullata"
-            ]}
+            options={REQUEST_STATUSES}
             onChange={(e) => setNewStatus(e.value)}
             placeholder="Seleziona stato"
             className="mb-3"

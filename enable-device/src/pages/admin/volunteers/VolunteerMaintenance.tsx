@@ -7,18 +7,6 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { db } from "../../../firebase";
 import { collection, addDoc } from "firebase/firestore";
  
-const VOLUNTEER_FIELDS = [
-  "data_ricezione",
-  "nome",
-  "cognome",
-  "stato", // campo stato nel csv
-  "email",
-  "telefono",
-  "interesse",
-  "descrizione"
-];
-
-
 export default function VolunteerMaintenance() {
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [logs, setLogs] = useState<string[]>([]);

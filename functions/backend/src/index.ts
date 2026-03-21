@@ -3,6 +3,7 @@ import {initializeApp} from "firebase-admin/app";
 initializeApp();
 
 export {createDeviceRequest} from "./device/createDeviceRequest";
+export {createDeviceRequestInternal} from "./device/createDeviceRequestInternal";
 export {changeStatus} from "./device/changeStatus";
 export {assignVolunteer} from "./device/assignVolunteer";
 export { register, checkRegistration, completeRegistration, registerWithIntegratedAuth, doLogin } from "./auth/register";

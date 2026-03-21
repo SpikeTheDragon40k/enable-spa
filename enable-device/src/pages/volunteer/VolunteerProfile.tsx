@@ -6,7 +6,7 @@ import { httpsCallable } from "firebase/functions";
 import { TabView, TabPanel } from "primereact/tabview";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Dropdown } from "primereact/dropdown";
+
 import { MultiSelect } from "primereact/multiselect";
 import { Checkbox } from "primereact/checkbox";
 import { Button } from "primereact/button";
@@ -43,28 +43,11 @@ const enableInterestAreasOptions: InterestAreaOption[] = [
   { label: "Altro", value: "Altro" },
 ];
 
-const availabilityOptions =
-  [
-    { label: "Più di 2 ore a settimana", value: "Più di 2 ore a settimana" },
-    { label: "1-2 ore a settimana", value: "1-2 ore a settimana" },
-    { label: "Qualche ora al mese", value: "Qualche ora al mese" },
-    { label: "Saltuaria (quando posso)", value: "Saltuaria (quando posso)" },
-    { label: "Variabile nel tempo", value: "Variabile nel tempo" },
-    { label: "In questo momento non riesco a dedicare tempo, ma desidero restare aggiornato/a e coinvolto/a", value: "In questo momento non riesco a dedicare tempo, ma desidero restare aggiornato/a e coinvolto/a" },
-  ];
 
-const continuityTypeOptions = [
-  { label: "Attività continuativa", value: "continuativa" },
-  { label: "Attività occasionali/su richiesta", value: "spot" },
-  { label: "Entrambe le modalità", value: "saltuaria" },
-];
 
-const involvementLevelOptions = [
-  { label: "Osservatore / basso", value: "bassa" },
-  { label: "Parte attiva su progetti specifici", value: "progetti" },
-  { label: "Ruolo di coordinamento o responsabilità su progetti", value: "coordinamento" },
-  { label: "Non so ancora, vorrei capire meglio", value: "non so" },
-];
+
+
+
 
 export default function VolunteerProfile() {
   const [privateProfile, setPrivateProfile] = useState<VolunteerPrivateProfile | null>(null);
@@ -153,48 +136,7 @@ export default function VolunteerProfile() {
     <div style={{ width: "100%", padding: 32 }}>
       <Toast ref={toastRef} />
       <TabView>
-        <TabPanel header="Disponibilità e coinvolgimento">
-          <div className="p-fluid">
-            <Message severity="info" icon="pi pi-info-circle" text="Ogni contributo è prezioso, anche se limitato nel tempo o variabile. Puoi indicarci qui la tua disponibilità attuale: si tratta di un’informazione puramente indicativa e non vincolante, che potrai modificare in qualsiasi momento. Tenere aggiornata questa sezione ci aiuta a organizzare al meglio le attività e a coinvolgere i volontari nel modo più adatto." style={{ marginBottom: 24 }} /> <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
-              <label htmlFor="availability" style={{ width: 200, textAlign: "left", marginRight: 16 }}>La tua disponibilità</label>
-              <Dropdown
-                id="availability"
-                value={privateProfile.availability}
-                options={availabilityOptions}
-                onChange={e => handlePrivateChange("availability", e.value)}
-                style={{ flex: 1 }}
-                tooltip="Quanta disponibilità di tempo pensi di riuscire a dedicare alla community? Indicaci la tua disponibilità attuale: non è un impegno formale e può cambiare nel tempo."
-                tooltipOptions={{ position: "bottom" }}
-              />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
-              <label htmlFor="continuityType" style={{ width: 200, textAlign: "left", marginRight: 16 }}>Continuità vs attività spot</label>
-              <Dropdown
-                id="continuityType"
-                value={privateProfile.continuityType}
-                options={continuityTypeOptions}
-                onChange={e => handlePrivateChange("continuityType", e.value)}
-                style={{ flex: 1 }}
-                tooltip="Preferisci attività continuative o interventi occasionali su singoli progetti?"
-                tooltipOptions={{ position: "bottom" }}
-              />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
-              <label htmlFor="desiredInvolvementLevel" style={{ width: 200, textAlign: "left", marginRight: 16 }}>Livello coinvolgimento</label>
-              <Dropdown
-                id="desiredInvolvementLevel"
-                value={privateProfile.desiredInvolvementLevel}
-                options={involvementLevelOptions}
-                onChange={e => handlePrivateChange("desiredInvolvementLevel", e.value)}
-                style={{ flex: 1 }}
-                tooltip="Che livello di coinvolgimento desideri in questo periodo?"
-                tooltipOptions={{ position: "bottom" }}
-              />
-            </div>
-          </div>
-        </TabPanel> <TabPanel header="Informazioni personali">
+        <TabPanel header="Informazioni personali">
           <div className="p-fluid">
             <div className="p-grid p-align-center">
               <div className="p-col-12 p-md-6">

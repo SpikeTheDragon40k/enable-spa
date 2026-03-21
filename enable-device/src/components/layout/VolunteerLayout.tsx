@@ -17,6 +17,7 @@ import Production from "../../pages/volunteer/Production";
 import Shipping from "../../pages/volunteer/Shipping";
 import Archive from "../../pages/volunteer/Archive";
 import VolunteerProfile from "../../pages/volunteer/VolunteerProfile";
+import VolunteerAvailability from "../../pages/volunteer/VolunteerAvailability";
 import MyPrinters from "../../pages/volunteer/MyPrinters";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
@@ -87,6 +88,11 @@ export default function VolunteerLayout() {
             label: "Le mie informazioni",
             icon: "pi pi-user",
             command: () => navigate("/volunteer/profile")
+        },
+        {
+            label: "Disponibilità e coinvolgimento",
+            icon: "pi pi-heart",
+            command: () => navigate("/volunteer/availability")
         },
         {
             label: "Le mie stampanti",
@@ -217,6 +223,7 @@ export default function VolunteerLayout() {
                     <div style={{ flex: 1, padding: 24, background: "#fafbfc", overflow: "auto" }}>
                         <Routes>
                             <Route path="profile" element={<VolunteerProfile />} />
+                            <Route path="availability" element={<VolunteerAvailability />} />
                             <Route path="*" element={<Navigate to="/volunteer/profile" />} />
                         </Routes>
                         <Dialog header="Informazioni sull'applicazione" visible={showInfo} style={{ width: "500px" }} onHide={() => setShowInfo(false)}>
@@ -318,6 +325,7 @@ export default function VolunteerLayout() {
                         <Route path="shipping" element={<Shipping requests={shippingRequests} />} />
                         <Route path="archive" element={<Archive />} />
                         <Route path="profile" element={<VolunteerProfile />} />
+                        <Route path="availability" element={<VolunteerAvailability />} />
                         <Route path="my-printers" element={<MyPrinters />} />
                         <Route path="*" element={<Navigate to="/volunteer" />} />
                     </Routes>

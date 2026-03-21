@@ -10,11 +10,13 @@ export const REQUEST_STATUSES = [
   "personalizzazione",
   "attesa materiali",
   "fabbricazione",
+  "fitting",
   "pronta per spedizione",
   "spedita",
   "followup famiglia",
   "completata",
-  "annullata"
+  "annullata",
+  "standby"
 ];
 
 export const REQUEST_STATUS_DESCRIPTIONS: { [key: string]: string } = {
@@ -29,11 +31,13 @@ export const REQUEST_STATUS_DESCRIPTIONS: { [key: string]: string } = {
   "personalizzazione": "Eventuali modifiche estetiche o funzionali.",
   "attesa materiali": "In attesa componenti necessari.",
   "fabbricazione": "Stampa e assemblaggio.",
+  "fitting": "Test delle dimensioni e verifica dell'adattamento del device.",
   "pronta per spedizione": "Dispositivo completato.",
   "spedita": "Spedizione effettuata.",
   "followup famiglia": "Contatto post-consegna per verifica utilizzo e soddisfazione.",
   "completata": "Richiesta chiusa positivamente dopo followup.",
-  "annullata": "Richiesta chiusa anticipatamente per motivi organizzativi, rinuncia famiglia o altre cause non tecniche."
+  "annullata": "Richiesta chiusa anticipatamente per motivi organizzativi, rinuncia famiglia o altre cause non tecniche.",
+  "standby": "Richiesta in pausa temporanea, ad esempio per attesa di capire come gestirla o decisioni da parte della famiglia."
 };
 
 export const CLOSED_STATUSES = [
@@ -56,6 +60,7 @@ export const PUBLIC_STATUS_GROUPS = {
     "personalizzazione",
     "attesa materiali",
     "fabbricazione",
+    "fitting",
     "pronta per spedizione",
     "spedita",
     "followup famiglia"
@@ -66,7 +71,8 @@ export const PUBLIC_STATUS_GROUPS = {
   "annullate / non completabili": [
     "followup famiglia ko",
     "followup famiglia troppo piccolo",
-    "annullata"
+    "annullata",
+    "standby"
   ]
 };
 
@@ -92,11 +98,13 @@ export const REQUEST_STATUS_SEVERITY: { [key: string]: "info" | "warning" | "suc
   "personalizzazione": "info",
   "attesa materiali": "warning",
   "fabbricazione": "info",
+  "fitting": "info",
   "pronta per spedizione": "success",
   "spedita": "success",
   "followup famiglia": "secondary",
   "completata": "success",
-  "annullata": "danger"
+  "annullata": "danger",
+  "standby": "danger"
 };
 
 export const PUBLIC_STATUS_SEVERITY: { [key: string]: "info" | "warning" | "success" | "secondary" | "contrast" | "danger" } = {
