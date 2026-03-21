@@ -56,216 +56,216 @@ export default function VolunteerConsentPage() {
 
             {/* Privacy + Codice Etico — wider panel area */}
             <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-            {/* Privacy */}
-            <Panel header="Informativa Privacy" style={{ marginBottom: 24 }}>
-                <div
-                    style={{
-                        maxHeight: 220,
-                        overflowY: "auto",
-                        fontSize: 14,
-                        color: "#334155",
-                        lineHeight: 1.7,
-                        padding: "0 4px",
-                    }}
-                >
-                    <p>
-                        I dati personali raccolti tramite questo portale (nome, cognome, email, telefono, username Telegram, provincia)
-                        sono trattati da Energy Family Project APS, titolare del trattamento, con sede legale in Italia,
-                        CF 96433570582, nel rispetto del Regolamento Europeo 2016/679 (GDPR) e del D.Lgs. 196/2003 come modificato.
-                    </p>
-                    <p>
-                        I dati sono utilizzati esclusivamente per la gestione delle attività di volontariato della community
-                        e-Nable Italia: coordinamento delle richieste di device, comunicazione con volontari e famiglie,
-                        reportistica interna. Non sono ceduti a terzi né utilizzati per finalità commerciali.
-                    </p>
-                    <p>
-                        I dati sono conservati per tutta la durata del rapporto di volontariato e per il periodo successivo
-                        previsto dagli obblighi di legge. Puoi esercitare i tuoi diritti (accesso, rettifica, cancellazione,
-                        portabilità, opposizione) scrivendo a{" "}
-                        <a href="mailto:info@e-nableitalia.it">info@e-nableitalia.it</a>.
-                    </p>
-                    <p>
-                        Per l'informativa completa visita il sito{" "}
-                        <a href="https://e-nableitalia.it/it_it/privacy-policy-2/" target="_blank" rel="noopener noreferrer">
-                            e-nableitalia.it/privacy-policy
-                        </a>.
-                    </p>
-                </div>
-            </Panel>
+                {/* Privacy */}
+                <Panel header="Informativa Privacy" style={{ marginBottom: 24 }}>
+                    <div
+                        style={{
+                            maxHeight: 220,
+                            overflowY: "auto",
+                            fontSize: 14,
+                            color: "#334155",
+                            lineHeight: 1.7,
+                            padding: "0 4px",
+                        }}
+                    >
+                        <p>
+                            I dati personali raccolti tramite questo portale (nome, cognome, email, telefono, username Telegram, provincia)
+                            sono trattati da Energy Family Project APS, titolare del trattamento, con sede legale in Italia,
+                            CF 96433570582, nel rispetto del Regolamento Europeo 2016/679 (GDPR) e del D.Lgs. 196/2003 come modificato.
+                        </p>
+                        <p>
+                            I dati sono utilizzati esclusivamente per la gestione delle attività di volontariato della community
+                            e-Nable Italia: coordinamento delle richieste di device, comunicazione con volontari e famiglie,
+                            reportistica interna. Non sono ceduti a terzi né utilizzati per finalità commerciali.
+                        </p>
+                        <p>
+                            I dati sono conservati per tutta la durata del rapporto di volontariato e per il periodo successivo
+                            previsto dagli obblighi di legge. Puoi esercitare i tuoi diritti (accesso, rettifica, cancellazione,
+                            portabilità, opposizione) scrivendo a{" "}
+                            <a href="mailto:info@e-nableitalia.it">info@e-nableitalia.it</a>.
+                        </p>
+                        <p>
+                            Per l'informativa completa visita il sito{" "}
+                            <a href="https://e-nableitalia.it/it_it/privacy-policy-2/" target="_blank" rel="noopener noreferrer">
+                                e-nableitalia.it/privacy-policy
+                            </a>.
+                        </p>
+                    </div>
+                </Panel>
 
-            {/* Code of conduct */}
-            <Panel header="Codice Etico" style={{ marginBottom: 32 }}>
-                <div
-                    style={{
-                        maxHeight: 480,
-                        overflowY: "auto",
-                        fontSize: 14,
-                        color: "#334155",
-                        lineHeight: 1.7,
-                        padding: "0 4px",
-                    }}
-                >
-                    <Message
-                        severity="info"
-                        text="La community e-Nable Italia si basa su collaborazione, rispetto e condivisione. Le linee guida qui sotto non sono semplici regole, ma il risultato dell'esperienza maturata nel tempo per garantire un ambiente positivo per tutti."
-                        style={{ marginBottom: 16, width: "100%" }}
-                    />
+                {/* Code of conduct */}
+                <Panel header="Codice Etico" style={{ marginBottom: 32 }}>
+                    <div
+                        style={{
+                            maxHeight: 480,
+                            overflowY: "auto",
+                            fontSize: 14,
+                            color: "#334155",
+                            lineHeight: 1.7,
+                            padding: "0 4px",
+                        }}
+                    >
+                        <Message
+                            severity="info"
+                            text="La community e-Nable Italia si basa su collaborazione, rispetto e condivisione. Le linee guida riportate qui sotto rappresentano il codice etico e il modello di autoregolamentazione costruito nel tempo dalla community. Ti invitiamo a leggerle con attenzione, in quanto costituiscono la base della partecipazione alla community e dovranno essere accettate per poter proseguire."
+                            style={{ marginBottom: 16, width: "100%" }}
+                        />
 
-                    <Accordion>
+                        <Accordion>
 
-                        <AccordionTab header="Principi della community">
-                            <p>
-                                Il movimento internazionale e-Nable è alimentato dai principi di <strong>rispetto reciproco</strong>,
-                                <strong> supporto</strong> e <strong>buona volontà</strong>: per questo la cultura della community
-                                è fondamentale ed è importante contribuire a mantenerla nel tempo.
-                            </p>
+                            <AccordionTab header="Principi della community">
+                                <p>
+                                    Il movimento internazionale e-Nable è alimentato dai principi di <strong>rispetto reciproco</strong>,
+                                    <strong> supporto</strong> e <strong>buona volontà</strong>: per questo la cultura della community
+                                    è fondamentale ed è importante contribuire a mantenerla nel tempo.
+                                </p>
 
-                            <p>
-                                Ci aspettiamo che ogni membro dimostri rispetto per gli altri in ogni momento, adotti uno spirito
-                                di condivisione, metta in discussione gli argomenti e non le persone, e contribuisca con
-                                osservazioni, soluzioni e analisi costruttive.
-                            </p>
+                                <p>
+                                    Ci aspettiamo che ogni membro dimostri rispetto per gli altri in ogni momento, adotti uno spirito
+                                    di condivisione, metta in discussione gli argomenti e non le persone, e contribuisca con
+                                    osservazioni, soluzioni e analisi costruttive.
+                                </p>
 
-                            <p>
-                                La community e-Nable è aperta a tutti, indipendentemente da sesso, orientamento sessuale,
-                                disabilità, aspetto fisico, etnia o religione. Le comunicazioni dovrebbero essere sempre
-                                <strong> professionali, inclusive e rispettose</strong>, in un contesto che valorizza le differenze
-                                come elemento di crescita comune.
-                            </p>
+                                <p>
+                                    La community e-Nable è aperta a tutti, indipendentemente da sesso, orientamento sessuale,
+                                    disabilità, aspetto fisico, etnia o religione. Le comunicazioni dovrebbero essere sempre
+                                    <strong> professionali, inclusive e rispettose</strong>, in un contesto che valorizza le differenze
+                                    come elemento di crescita comune.
+                                </p>
 
-                            <p>
-                                Ti chiediamo di prestare attenzione a comportamenti o linguaggi che possano escludere, sminuire
-                                o mettere a disagio altre persone. In caso di situazioni non coerenti con questi principi,
-                                il gruppo di coordinamento potrà intervenire per tutelare la community e le persone coinvolte.
-                            </p>
-                        </AccordionTab>
+                                <p>
+                                    Ti chiediamo di prestare attenzione a comportamenti o linguaggi che possano escludere, sminuire
+                                    o mettere a disagio altre persone. In caso di situazioni non coerenti con questi principi,
+                                    il gruppo di coordinamento potrà intervenire per tutelare la community e le persone coinvolte.
+                                </p>
+                            </AccordionTab>
 
-                        <AccordionTab header="Ruolo del volontario">
-                            <p>
-                                e-Nable Italia è una <strong>community aperta e inclusiva</strong>, parte del movimento
-                                internazionale e-Nable: una rete globale di volontari che mettono a disposizione competenze,
-                                tempo e strumenti per realizzare <em>device stampati in 3D</em> destinati a persone con
-                                limb difference.
-                            </p>
+                            <AccordionTab header="Ruolo del volontario">
+                                <p>
+                                    e-Nable Italia è una <strong>community aperta e inclusiva</strong>, parte del movimento
+                                    internazionale e-Nable: una rete globale di volontari che mettono a disposizione competenze,
+                                    tempo e strumenti per realizzare <em>device stampati in 3D</em> destinati a persone con
+                                    limb difference.
+                                </p>
 
-                            <p>
-                                È importante sapere che <strong>e-Nable Italia non è un’azienda e non vende prodotti</strong>:
-                                i device sono <strong>realizzati e donati gratuitamente</strong> a chi ne ha bisogno.
-                                Il contributo dei volontari si basa quindi su uno spirito di collaborazione e condivisione,
-                                senza finalità commerciali.
-                            </p>
+                                <p>
+                                    È importante sapere che <strong>e-Nable Italia non è un’azienda e non vende prodotti</strong>:
+                                    i device sono <strong>realizzati e donati gratuitamente</strong> a chi ne ha bisogno.
+                                    Il contributo dei volontari si basa quindi su uno spirito di collaborazione e condivisione,
+                                    senza finalità commerciali.
+                                </p>
 
-                            <p>
-                                I device e-Nable <strong>non sono protesi e non intendono sostituirle</strong>. Si tratta di strumenti che possono:
-                            </p>
+                                <p>
+                                    I device e-Nable <strong>non sono protesi e non intendono sostituirle</strong>. Si tratta di strumenti che possono:
+                                </p>
 
-                            <ul>
-                                <li>favorire un <strong>avvicinamento graduale all’uso delle protesi</strong>, soprattutto nei bambini;</li>
-                                <li>integrare le soluzioni esistenti dove <strong>non sono disponibili alternative adeguate</strong> (ad esempio in ambito ludico o sportivo);</li>
-                                <li>supportare percorsi di <strong>inclusione e autonomia</strong> nella vita quotidiana.</li>
-                            </ul>
+                                <ul>
+                                    <li>favorire un <strong>avvicinamento graduale all’uso delle protesi</strong>, soprattutto nei bambini;</li>
+                                    <li>integrare le soluzioni esistenti dove <strong>non sono disponibili alternative adeguate</strong> (ad esempio in ambito ludico o sportivo);</li>
+                                    <li>supportare percorsi di <strong>inclusione e autonomia</strong> nella vita quotidiana.</li>
+                                </ul>
 
-                            <p>
-                                L’iniziativa è <strong>promossa e coordinata da Energy Family Project APS</strong>, che svolge
-                                un ruolo di raccordo tra famiglie e volontari: raccoglie le richieste, le condivide con la community
-                                e facilita il coordinamento delle attività.
-                            </p>
+                                <p>
+                                    L’iniziativa è <strong>promossa e coordinata da Energy Family Project APS</strong>, che svolge
+                                    un ruolo di raccordo tra famiglie e volontari: raccoglie le richieste, le condivide con la community
+                                    e facilita il coordinamento delle attività.
+                                </p>
 
-                            <p>
-                                I volontari operano <strong>in autonomia o in piccoli gruppi</strong>, in base alle proprie competenze
-                                e disponibilità, all’interno di un contesto collaborativo condiviso.
-                                L’associazione, quando possibile, supporta le attività contribuendo ai costi dei materiali,
-                                offrendo supporto logistico e mettendo a disposizione strumenti e risorse.
-                            </p>
+                                <p>
+                                    I volontari operano <strong>in autonomia o in piccoli gruppi</strong>, in base alle proprie competenze
+                                    e disponibilità, all’interno di un contesto collaborativo condiviso.
+                                    L’associazione, quando possibile, supporta le attività contribuendo ai costi dei materiali,
+                                    offrendo supporto logistico e mettendo a disposizione strumenti e risorse.
+                                </p>
 
-                            <p>
-                                <strong>Tempi e modalità di partecipazione sono flessibili</strong> e vengono definiti insieme
-                                al coordinamento: la disponibilità può variare nel tempo e non implica automaticamente
-                                un impegno continuativo su tutti i progetti.
-                            </p>
+                                <p>
+                                    <strong>Tempi e modalità di partecipazione sono flessibili</strong> e vengono definiti insieme
+                                    al coordinamento: la disponibilità può variare nel tempo e non implica automaticamente
+                                    un impegno continuativo su tutti i progetti.
+                                </p>
 
-                            <p>
-                                Quando scegli di prendere in carico un’attività, ti chiediamo di farlo con responsabilità
-                                verso la community e verso i recipient, <strong>portando a termine quanto condiviso</strong>
-                                oppure segnalando tempestivamente eventuali difficoltà.
-                            </p>
+                                <p>
+                                    Quando scegli di prendere in carico un’attività, ti chiediamo di farlo con responsabilità
+                                    verso la community e verso i recipient, <strong>portando a termine quanto condiviso</strong>
+                                    oppure segnalando tempestivamente eventuali difficoltà.
+                                </p>
 
-                            <p>
-                                È importante operare seguendo le linee guida della community, prestando attenzione alla
-                                <strong>qualità e sicurezza dei device</strong>, affinché siano adeguati alle esigenze degli utilizzatori.
-                            </p>
+                                <p>
+                                    È importante operare seguendo le linee guida della community, prestando attenzione alla
+                                    <strong>qualità e sicurezza dei device</strong>, affinché siano adeguati alle esigenze degli utilizzatori.
+                                </p>
 
-                            <p>
-                                Ti invitiamo inoltre a rimanere aggiornato sulle evoluzioni dei progetti e dei device
-                                condivisi dalla community e-Nable, anche attraverso gli strumenti disponibili a livello internazionale.
-                            </p>
-                        </AccordionTab>
+                                <p>
+                                    Ti invitiamo inoltre a rimanere aggiornato sulle evoluzioni dei progetti e dei device
+                                    condivisi dalla community e-Nable, anche attraverso gli strumenti disponibili a livello internazionale.
+                                </p>
+                            </AccordionTab>
 
-                        <AccordionTab header="Progetti e collaborazione">
-                            <p>
-                                Le attività della community e-Nable Italia si sviluppano principalmente in due ambiti:
-                            </p>
+                            <AccordionTab header="Progetti e collaborazione">
+                                <p>
+                                    Le attività della community e-Nable Italia si sviluppano principalmente in due ambiti:
+                                </p>
 
-                            <ul>
-                                <li>
-                                    <strong>la realizzazione di un device</strong>, su richiesta di una famiglia o di un utilizzatore;
-                                </li>
-                                <li>
-                                    <strong>lo sviluppo o il miglioramento di progetti open source</strong>, condivisi con la community.
-                                </li>
-                            </ul>
+                                <ul>
+                                    <li>
+                                        <strong>la realizzazione di un device</strong>, su richiesta di una famiglia o di un utilizzatore;
+                                    </li>
+                                    <li>
+                                        <strong>lo sviluppo o il miglioramento di progetti open source</strong>, condivisi con la community.
+                                    </li>
+                                </ul>
 
-                            <p>
-                                La realizzazione di un device è generalmente gestita da volontari che operano
-                                <strong> in autonomia</strong>, organizzandosi in base alle proprie competenze,
-                                disponibilità e, quando possibile, alla vicinanza geografica con il recipient.
-                            </p>
+                                <p>
+                                    La realizzazione di un device è generalmente gestita da volontari che operano
+                                    <strong> in autonomia</strong>, organizzandosi in base alle proprie competenze,
+                                    disponibilità e, quando possibile, alla vicinanza geografica con il recipient.
+                                </p>
 
-                            <p>
-                                I progetti di <strong>ricerca, sviluppo e miglioramento open source</strong> sono invece
-                                attività collaborative, con l’obiettivo di creare soluzioni accessibili, migliorabili
-                                e riutilizzabili da tutti.
-                            </p>
+                                <p>
+                                    I progetti di <strong>ricerca, sviluppo e miglioramento open source</strong> sono invece
+                                    attività collaborative, con l’obiettivo di creare soluzioni accessibili, migliorabili
+                                    e riutilizzabili da tutti.
+                                </p>
 
-                            <p>
-                                In questo contesto è fondamentale mantenere uno <strong>spirito di condivisione e rispetto</strong>:
-                                i file, le documentazioni e i contributi sono il risultato di un lavoro collettivo.
-                                Ti chiediamo quindi di prestare attenzione alle <strong>licenze dei progetti</strong>,
-                                verificando sempre le condizioni d’uso prima di modificare o distribuire materiali.
-                            </p>
+                                <p>
+                                    In questo contesto è fondamentale mantenere uno <strong>spirito di condivisione e rispetto</strong>:
+                                    i file, le documentazioni e i contributi sono il risultato di un lavoro collettivo.
+                                    Ti chiediamo quindi di prestare attenzione alle <strong>licenze dei progetti</strong>,
+                                    verificando sempre le condizioni d’uso prima di modificare o distribuire materiali.
+                                </p>
 
-                            <p>
-                                Quando contribuisci a un progetto:
-                            </p>
+                                <p>
+                                    Quando contribuisci a un progetto:
+                                </p>
 
-                            <ul>
-                                <li>il lavoro viene generalmente condiviso come <strong>progetto collettivo della community</strong>;</li>
-                                <li>i contributi individuali sono riconosciuti e valorizzati nel contesto del progetto;</li>
-                                <li>i nuovi sviluppi sono normalmente rilasciati come <strong>open source</strong>, in linea con i principi del movimento e-Nable.</li>
-                            </ul>
+                                <ul>
+                                    <li>il lavoro viene generalmente condiviso come <strong>progetto collettivo della community</strong>;</li>
+                                    <li>i contributi individuali sono riconosciuti e valorizzati nel contesto del progetto;</li>
+                                    <li>i nuovi sviluppi sono normalmente rilasciati come <strong>open source</strong>, in linea con i principi del movimento e-Nable.</li>
+                                </ul>
 
-                            <p>
-                                È possibile portare avanti anche progetti personali, purché siano mantenuti
-                                <strong> distinti dalle attività e-Nable Italia</strong> e non generino ambiguità
-                                rispetto alla community o ai suoi progetti.
-                            </p>
+                                <p>
+                                    È possibile portare avanti anche progetti personali, purché siano mantenuti
+                                    <strong> distinti dalle attività e-Nable Italia</strong> e non generino ambiguità
+                                    rispetto alla community o ai suoi progetti.
+                                </p>
 
-                            <p>
-                                La condivisione di contenuti (foto, video, comunicazioni) è benvenuta:
-                                ti chiediamo di farlo con attenzione, nel rispetto delle persone coinvolte
-                                e coordinandoti quando necessario per garantire coerenza e tutela della privacy.
-                            </p>
+                                <p>
+                                    La condivisione di contenuti (foto, video, comunicazioni) è benvenuta:
+                                    ti chiediamo di farlo con attenzione, nel rispetto delle persone coinvolte
+                                    e coordinandoti quando necessario per garantire coerenza e tutela della privacy.
+                                </p>
 
-                            <p>
-                                Per approfondire puoi consultare il sito{" "}
-                                <a href="https://e-nableitalia.it" target="_blank" rel="noopener noreferrer">
-                                    e-nableitalia.it
-                                </a>.
-                            </p>
-                        </AccordionTab>
-                    </Accordion>
-                </div>
-            </Panel>
+                                <p>
+                                    Per approfondire puoi consultare il sito{" "}
+                                    <a href="https://e-nableitalia.it" target="_blank" rel="noopener noreferrer">
+                                        e-nableitalia.it
+                                    </a>.
+                                </p>
+                            </AccordionTab>
+                        </Accordion>
+                    </div>
+                </Panel>
             </div>{/* end wider panel area */}
 
             {/* Checkboxes */}

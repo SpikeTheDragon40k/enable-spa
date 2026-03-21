@@ -66,6 +66,15 @@ export default function VolunteerDashboard() {
     if (!publicProfile || Object.values(publicProfile).every(v => v === "" || v === false)) {
       missingSections.push("Profilo pubblico");
     }
+    if (!privateProfile?.availability) {
+      missingSections.push("Disponibilità e coinvolgimento / Tempo dedicato");
+    }
+    if (!privateProfile?.continuityType) {
+      missingSections.push("Disponibilità e coinvolgimento / Tipo di impegno");
+    }
+    if (!privateProfile?.desiredInvolvementLevel) {
+      missingSections.push("Disponibilità e coinvolgimento / Livello di coinvolgimento");
+    }
   }
 
   // Pie chart: conteggio richieste per stato
@@ -121,8 +130,8 @@ export default function VolunteerDashboard() {
       id: `missing-${section}`,
       sticky: true,
       severity: "info",
-      summary: "Sezione incompleta",
-      detail: `Completa la sezione "${section}" per migliorare il tuo profilo.`,
+      summary: "Sezione incompleta:",
+      detail: `Completa la sezione "${section}" per completare il tuo profilo.`,
       closable: false,
     });
   });
@@ -178,8 +187,8 @@ export default function VolunteerDashboard() {
       }}>
         <span className="pi pi-user" style={{ fontSize: 32, marginRight: 16 }} />
         <div>
-          <h2 style={{ margin: 0, fontWeight: 700 }}>Volunteer Dashboard</h2>
-          <p style={{ margin: 0, fontSize: 18 }}>Overview delle tue informazioni e richieste.</p>
+          <h2 style={{ margin: 0, fontWeight: 700 }}>Dashboard Volontario</h2>
+          <p style={{ margin: 0, fontSize: 18 }}>Panoramica delle tue informazioni e delle richieste.</p>
         </div>
       </div>
 
