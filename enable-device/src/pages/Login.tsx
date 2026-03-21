@@ -216,6 +216,11 @@ export default function Login() {
           onClick={() => navigate("/request-device")}
         />
       </div>
+      <div style={{ textAlign: "center", marginTop: 24, color: "#aaa", fontSize: 12 }}>
+        <span>v{__APP_VERSION__}</span>
+        <span style={{ margin: "0 6px" }}>·</span>
+        <span>Aggiornata al {__BUILD_DATE__}</span>
+      </div>
       <Footer />
     </div>
   );

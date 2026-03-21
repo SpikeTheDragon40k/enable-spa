@@ -63,6 +63,7 @@ const COLUMN_COLORS: Record<string, string> = {
 };
 
 async function getUserFullName(userId: string): Promise<string> {
+  if (!userId || userId.includes("/")) return userId;
   const profileRef = doc(db, "users", userId, "private", "profile");
   const profileSnap = await getDoc(profileRef);
   if (profileSnap.exists()) {
@@ -271,7 +272,7 @@ export default function AdminDashboard({
                         transition: "background 0.2s",
                       }}
                     >
-                      <td style={{ padding: "6px 8px", paddingRight: 12 }}>
+                      <td style={{ padding: "6px 8px", paddingRight: 12, wordBreak: "break-word", overflowWrap: "anywhere", maxWidth: 0, width: "60%" }}>
                         {card.name ? card.name.toLowerCase() : "-"}
                       </td>
                       <td style={{ padding: "6px 8px", paddingRight: 12 }}>
@@ -284,7 +285,7 @@ export default function AdminDashboard({
                   </tbody>
                 </table>
 
-                <div style={{ fontSize: 14, marginBottom: 12, fontStyle: "italic" }}>
+                <div style={{ fontSize: 14, marginBottom: 12, fontStyle: "italic", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                   {card.description}
                 </div>
 
@@ -297,14 +298,16 @@ export default function AdminDashboard({
                         alignItems: "center",
                         gap: 8,
                         fontSize: 13,
+                        minWidth: 0,
                       }}
                     >
                       <Avatar
                         label={card.assignedVolunteer[0]}
                         shape="circle"
                         size="normal"
+                        style={{ flexShrink: 0 }}
                       />
-                      {card.assignedVolunteer}
+                      <span style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{card.assignedVolunteer}</span>
                     </div>
                   </>
                 )}
