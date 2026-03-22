@@ -321,19 +321,6 @@ export const completeRegistration = onCall(
         console.error("[completeRegistration] KO: Failed to send Telegram notification", telegramError);
       }
 
-      // --- Send confirmation email ---
-      try {
-        const emailDoc = {
-          to: user.email,
-          template: "attivazioneVolontario",
-          createdAt: Timestamp.now()
-        };
-        await db.collection("mail").add(emailDoc);
-        console.log("[registerWithIntegratedAuth] Confirmation email queued");
-      } catch (emailErr) {
-        console.error("[registerWithIntegratedAuth] Failed to queue confirmation email", emailErr);
-      }
-
       console.log(`[completeRegistration] OK: user ${uid} (${email}) created`);
       return { success: true };
     } catch (err) {
@@ -467,7 +454,7 @@ export const registerWithIntegratedAuth = onCall(
         const userData = userSnap.data() as { email: string; firstName?: string; lastName?: string };
         const emailDoc = {
           to: userData.email,
-          template: "attivazioneVolontario",
+          template: { name: "attivazioneVolontario", data: {} },
           createdAt: Timestamp.now()
         };
         await db.collection("mail").add(emailDoc);

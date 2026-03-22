@@ -13,5 +13,6 @@ export { updateVolunteerProfile } from "./volunteer/updateVolunteerProfile";
 export { addPrinter } from "./volunteer/addPrinter";
 export { inviteVolunteer } from "./volunteer/invite";
 export { acceptVolunteerConsents } from "./volunteer/acceptVolunteerConsents";
+export { createShipmentRequest, approveShipmentRequest, deleteShipmentRequest } from "./shipments/shipmentRequests";
 
 console.log("REGISTER BUILD SUCCESSFUL - " + new Date().toISOString());

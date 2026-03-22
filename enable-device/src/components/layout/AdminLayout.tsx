@@ -27,6 +27,9 @@ import { PUBLIC_STATUS_GROUPS } from "../../helpers/requestStatus";
 import AdminDashboard from "../../pages/admin/AdminDashboard";
 import VolunteerMaintenance from "../../pages/admin/volunteers/VolunteerMaintenance";
 import ContactsList from "../../pages/admin/volunteers/ContactsList";
+import ShipmentRequestsPage from "../../pages/shipments/ShipmentRequestsPage";
+import AdminEmailLogsPage from "../../pages/admin/AdminEmailLogsPage";
+import AdminSecurityLogsPage from "../../pages/admin/AdminSecurityLogsPage";
 
 export default function AdminLayout() {
   const [user, setUser] = useState<any | null>(null);
@@ -214,6 +217,21 @@ export default function AdminLayout() {
       ],
     },
     {
+      label: "Richieste spedizioni",
+      icon: "pi pi-truck",
+      command: () => navigate("/admin/shipments"),
+    },
+    {
+      label: "Log Email",
+      icon: "pi pi-envelope",
+      command: () => navigate("/admin/email-logs"),
+    },
+    {
+      label: "Security Logs",
+      icon: "pi pi-shield",
+      command: () => navigate("/admin/security-logs"),
+    },
+    {
       label: "Statistiche",
       icon: "pi pi-chart-bar", // statistiche
       command: () => navigate("/admin/stats"),
@@ -356,6 +374,9 @@ export default function AdminLayout() {
             <Route path="volunteers/pending" element={<PendingVolunteers volunteers={pendingVolunteers} />} />
             <Route path="volunteers/contacts" element={<ContactsList />} />
             <Route path="volunteers/maintenance" element={<VolunteerMaintenance />} />
+            <Route path="shipments" element={<ShipmentRequestsPage />} />
+            <Route path="email-logs" element={<AdminEmailLogsPage />} />
+            <Route path="security-logs" element={<AdminSecurityLogsPage />} />
             <Route path="stats" element={<AdminStats />} />
             <Route path="request/:id" element={<RequestDetail />} />
             <Route path="dashboard" element={<AdminDashboard requests={requests}/>} />

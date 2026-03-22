@@ -42,6 +42,40 @@ const STATUS_COLORS: Record<string, TagProps['severity']> = {
   disabled: "secondary"
 };
 
+function toDate(val: unknown): Date | null {
+  if (!val) return null;
+  // Firestore Timestamp object with .toDate()
+  if (typeof (val as Record<string, unknown>)?.toDate === "function")
+    return (val as { toDate: () => Date }).toDate();
+  // Plain serialized Firestore Timestamp { seconds, nanoseconds }
+  if (typeof val === "object" && typeof (val as Record<string, unknown>).seconds === "number")
+    return new Date(((val as Record<string, unknown>).seconds as number) * 1000);
+  // String or number — try standard parse (handles ISO 8601 and RFC 2822)
+  const d = new Date(val as string | number);
+  if (!isNaN(d.getTime())) return d;
+  // Italian format "DD/MM/YYYY HH:mm" or "DD/MM/YYYY HH.mm.ss" etc.
+  if (typeof val === "string") {
+    const m = val.match(/^(\d{2})\/(\d{2})\/(\d{4})[T ](\d{2})[.:](\d{2})(?:[.:](\d{2}))?/);
+    if (m) return new Date(`${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:${m[6] ?? "00"}`);
+  }
+  return null;
+}
+
+function toMs(val: unknown): number {
+  return toDate(val)?.getTime() ?? 0;
+}
+
+function formatDate(val: unknown): string {
+  const d = toDate(val);
+  if (!d) return (val as string) || "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
 export default function ContactsList() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -188,12 +222,9 @@ export default function ContactsList() {
             header="Ricevuto il"
             sortable
             style={{ minWidth: 180 }}
+            body={(row: any) => formatDate(row.receivedAt)}
             sortFunction={(e) => {
-              return [...e.data].sort((a, b) => {
-          const dateA = a.receivedAt ? new Date(a.receivedAt).getTime() : 0;
-          const dateB = b.receivedAt ? new Date(b.receivedAt).getTime() : 0;
-          return e.order! * (dateA - dateB);
-              });
+              return [...e.data].sort((a, b) => (e.order ?? 1) * (toMs(a.receivedAt) - toMs(b.receivedAt)));
             }}
           />
           <Column field="firstName" header="Nome" sortable style={{ minWidth: 120 }} />

@@ -19,6 +19,7 @@ import Archive from "../../pages/volunteer/Archive";
 import VolunteerProfile from "../../pages/volunteer/VolunteerProfile";
 import VolunteerAvailability from "../../pages/volunteer/VolunteerAvailability";
 import MyPrinters from "../../pages/volunteer/MyPrinters";
+import ShipmentRequestsPage from "../../pages/shipments/ShipmentRequestsPage";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 export default function VolunteerLayout() {
@@ -123,6 +124,11 @@ export default function VolunteerLayout() {
             label: "Archivio",
             icon: "pi pi-folder",
             command: () => navigate("/volunteer/archive")
+        },
+        {
+            label: "Richieste spedizioni",
+            icon: "pi pi-truck",
+            command: () => navigate("/volunteer/shipments")
         }
     ];
 
@@ -327,6 +333,7 @@ export default function VolunteerLayout() {
                         <Route path="profile" element={<VolunteerProfile />} />
                         <Route path="availability" element={<VolunteerAvailability />} />
                         <Route path="my-printers" element={<MyPrinters />} />
+                        <Route path="shipments" element={<ShipmentRequestsPage />} />
                         <Route path="*" element={<Navigate to="/volunteer" />} />
                     </Routes>
                     <Dialog header="Informazioni sull'applicazione" visible={showInfo} style={{ width: "500px" }} onHide={() => setShowInfo(false)}>

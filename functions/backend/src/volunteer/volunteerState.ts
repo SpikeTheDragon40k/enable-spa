@@ -1,5 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { initializeApp } from "firebase-admin/app";
 import { logSecurityEvent } from "../security/securityLog";
 
@@ -64,6 +64,18 @@ export const activateVolunteers = onCall(
             `,
           },
         });
+        // --- Send confirmation email ---
+        try {
+          const emailDoc = {
+            to: email,
+            template: { name: "attivazioneVolontario", data: {} },
+            createdAt: Timestamp.now()
+          };
+          await db.collection("mail").add(emailDoc);
+          console.log("[registerWithIntegratedAuth] Confirmation email queued");
+        } catch (emailErr) {
+          console.error("[registerWithIntegratedAuth] Failed to queue confirmation email", emailErr);
+        }
       }
       // Log security event: successo
       await logSecurityEvent({
@@ -81,6 +93,7 @@ export const activateVolunteers = onCall(
           metadata: { ids },
         },
       });
+
       return { success: true };
     } catch (error) {
       errorMsg = error instanceof Error ? error.message : String(error);

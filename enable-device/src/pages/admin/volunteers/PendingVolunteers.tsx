@@ -15,6 +15,8 @@ export default function PendingVolunteers({ volunteers }: { volunteers: any[] })
     ...u,
     createdAt: u.createdAt?.toDate ? u.createdAt.toDate() : null,
     profileUpdatedAt: u.profileUpdatedAt,
+    consentPrivacy: u.consents?.privacy?.accepted === true,
+    consentCode: u.consents?.codeOfConduct?.accepted === true,
   }));
 
   const dateTemplate = (row: any, field: string) => {
@@ -93,6 +95,20 @@ export default function PendingVolunteers({ volunteers }: { volunteers: any[] })
         {/* <Column field="mustSetPassword" header="Da impostare password" body={(row) => boolTemplate(row, "mustSetPassword")} filter /> */}
         {/* <Column field="authProvider" header="Provider" body={providerTemplate} filter /> */}
         <Column header="Creato" body={(row) => dateTemplate(row, "createdAt")} filter field="createdAt" dataType="date" filterElement={dateFilterTemplate} />
+        <Column
+          field="consentPrivacy"
+          header="Privacy"
+          body={(row) => row.consentPrivacy
+            ? <span className="pi pi-check" style={{ color: "#22c55e", fontSize: 18 }} />
+            : <span className="pi pi-times" style={{ color: "#ef4444", fontSize: 18 }} />}
+        />
+        <Column
+          field="consentCode"
+          header="Cod. Etico"
+          body={(row) => row.consentCode
+            ? <span className="pi pi-check" style={{ color: "#22c55e", fontSize: 18 }} />
+            : <span className="pi pi-times" style={{ color: "#ef4444", fontSize: 18 }} />}
+        />
         {/* Campi profilo */}
         {/* <Column field="availability" header="Disponibilità" filter /> */}
         {/* <Column field="consentPrivacy" header="Privacy" body={(row) => boolTemplate(row, "consentPrivacy")} filter /> */}
