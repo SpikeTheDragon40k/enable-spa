@@ -172,7 +172,13 @@ export default function VolunteerDashboard() {
     }
   }
 
-  // Pie chart: conteggio richieste per stato
+  // Pie chart: conteggio richieste per stato (solo attive)
+  const INACTIVE_PUBLIC_STATUSES = ["annullate / non completabili", "da gestire"];
+  const activePublicRequests = publicRequests.filter(
+    (r) =>
+      !INACTIVE_PUBLIC_STATUSES.includes(r.publicStatus) 
+  );
+
   const requestStatusCount = publicRequests.reduce((acc, req) => {
     acc[req.publicStatus] = (acc[req.publicStatus] || 0) + 1;
     return acc;
@@ -187,7 +193,7 @@ export default function VolunteerDashboard() {
     ],
   };
 
-  const requestDeviceTypeCount = publicRequests.reduce((acc, req) => {
+  const requestDeviceTypeCount = activePublicRequests.reduce((acc, req) => {
     const key = req.devicetype || "sconosciuto";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
@@ -503,21 +509,21 @@ export default function VolunteerDashboard() {
       )}
 
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 32 }}>
-        <Card title="Riepilogo richieste della comunity per stato" style={{ flex: "1 1 350px", minWidth: 300 }}>
+        <Card title="Riepilogo richieste per stato" style={{ flex: "1 1 350px", minWidth: 300 }}>
           <div style={{ marginBottom: 16, fontWeight: 500, fontSize: 18 }}>
-            Totale richieste: {publicRequests.length}
+            Totale richieste ricevute: {publicRequests.length}
           </div>
           <Chart type="pie" data={chartData} style={{ maxWidth: 400 }} />
         </Card>
 
-        <Card title="Richieste della comunity per tipo device" style={{ flex: "1 1 350px", minWidth: 300 }}>
+        <Card title="Riepilogo richieste per tipo device" style={{ flex: "1 1 350px", minWidth: 300 }}>
           <div style={{ marginBottom: 16, fontWeight: 500, fontSize: 18 }}>
-            Totale richieste: {publicRequests.length}
+            Totale richieste gestite/in gestione: {activePublicRequests.length}
           </div>
           <Chart type="pie" data={deviceTypeChartData} style={{ maxWidth: 400 }} />
         </Card>
 
-        <Card title="Elenco richieste da gestire" style={{ flex: "2 1 500px", minWidth: 350 }}>
+        <Card title={`Elenco richieste da gestire (${manageablePublicRequests.length})`} style={{ flex: "2 1 500px", minWidth: 350 }}>
             <DataTable
               value={manageablePublicRequests}
               paginator
