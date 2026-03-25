@@ -97,7 +97,10 @@ export default function VolunteerDashboard() {
             const base = { id: d.id, ...d.data() };
             const privSnap = await getDoc(doc(db, "deviceRequests", d.id, "private", "data"));
             const priv = privSnap.exists() ? privSnap.data() : {};
-            return { ...base, ...priv };
+            const publicReq = publicReqSnap.docs.find((pd) => pd.id === d.id);
+            const devicetype = publicReq?.data()?.devicetype ?? "";
+            const requestNumber = publicReq?.data()?.requestNumber ?? "";
+            return { ...base, ...priv, deviceType: devicetype, requestNumber };
           })
         );
         setPrivateRequests(enriched);
@@ -180,6 +183,21 @@ export default function VolunteerDashboard() {
       {
         data: Object.values(requestStatusCount),
         backgroundColor: ["#42A5F5", "#66BB6A", "#FFA726", "#EF5350", "#AB47BC"],
+      },
+    ],
+  };
+
+  const requestDeviceTypeCount = publicRequests.reduce((acc, req) => {
+    const key = req.devicetype || "sconosciuto";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const deviceTypeChartData = {
+    labels: Object.keys(requestDeviceTypeCount),
+    datasets: [
+      {
+        data: Object.values(requestDeviceTypeCount),
+        backgroundColor: ["#42A5F5", "#66BB6A", "#FFA726", "#EF5350", "#AB47BC", "#26C6DA", "#FF7043", "#8D6E63"],
       },
     ],
   };
@@ -446,6 +464,7 @@ export default function VolunteerDashboard() {
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
               currentPageReportTemplate="{first}-{last} di {totalRecords} richieste"
             >
+              <Column field="requestNumber" header="Seq" sortable />
               <Column field="firstName" header="Nome" sortable />
               <Column field="lastName" header="Cognome" sortable />
               <Column field="age" header="Età" sortable />
@@ -491,6 +510,13 @@ export default function VolunteerDashboard() {
           <Chart type="pie" data={chartData} style={{ maxWidth: 400 }} />
         </Card>
 
+        <Card title="Richieste della comunity per tipo device" style={{ flex: "1 1 350px", minWidth: 300 }}>
+          <div style={{ marginBottom: 16, fontWeight: 500, fontSize: 18 }}>
+            Totale richieste: {publicRequests.length}
+          </div>
+          <Chart type="pie" data={deviceTypeChartData} style={{ maxWidth: 400 }} />
+        </Card>
+
         <Card title="Elenco richieste da gestire" style={{ flex: "2 1 500px", minWidth: 350 }}>
             <DataTable
               value={manageablePublicRequests}
@@ -503,7 +529,9 @@ export default function VolunteerDashboard() {
               sortField="createdAt"
               sortOrder={-1}
             >
+              <Column field="requestNumber" header="Seq" sortable />
               <Column field="ageRange" header="Fascia d'età" sortable />
+              <Column field="devicetype" header="Device" sortable />
               <Column field="province" header="Provincia" sortable />
               <Column field="publicStatus" header="Stato" sortable />
               <Column

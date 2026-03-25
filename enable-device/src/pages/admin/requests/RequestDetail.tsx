@@ -4,6 +4,7 @@ import { doc, getDoc, collection, query, orderBy, getDocs, updateDoc } from "fir
 import { db, functions } from "../../../firebase";
 import { httpsCallable } from "firebase/functions";
 import { Button } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
@@ -38,6 +39,11 @@ export default function RequestDetail() {
   const [addingVolunteer, setAddingVolunteer] = useState(false);
   const [removingVolunteer, setRemovingVolunteer] = useState(false);
   const [showAddressDialog, setShowAddressDialog] = useState(false);
+  const [showChangeDeviceTypeDialog, setShowChangeDeviceTypeDialog] = useState(false);
+  const [deviceTypeValue, setDeviceTypeValue] = useState("");
+  const [deviceTypeOtherText, setDeviceTypeOtherText] = useState("altro");
+  const [isDeviceTypeOther, setIsDeviceTypeOther] = useState(false);
+  const [savingDeviceType, setSavingDeviceType] = useState(false);
   const [addressForm, setAddressForm] = useState<ShippingAddress>({
     fullName: "", street: "", city: "", province: "", postalCode: "", country: "IT",
   });
@@ -268,6 +274,32 @@ export default function RequestDetail() {
     }
   };
 
+  const DEVICE_TYPE_OPTIONS = [
+    "Kinetic Hand",
+    "Kinetic Arm",
+    "Bike Adapter",
+    "Guitar Pick",
+    "Kwawu Arm",
+    "Device Batteria",
+    "Kwawu Gripper",
+    "Phoenix Hand",
+  ];
+
+  const handleSaveDeviceType = async () => {
+    if (!id) return;
+    setSavingDeviceType(true);
+    try {
+      const newDeviceType = isDeviceTypeOther ? deviceTypeOtherText.trim() : deviceTypeValue;
+      await updateDoc(doc(db, "publicDeviceRequests", id), { devicetype: newDeviceType });
+      setRequest((prev: any) => ({ ...prev, deviceType: newDeviceType }));
+      toast.current?.show({ severity: "success", summary: "Salvato", detail: "Tipo device aggiornato.", life: 3000 });
+      setShowChangeDeviceTypeDialog(false);
+    } catch (err: any) {
+      toast.current?.show({ severity: "error", summary: "Errore", detail: err?.message || "Errore durante il salvataggio.", life: 4000 });
+    }
+    setSavingDeviceType(false);
+  };
+
   const handleSaveAddress = async () => {
     if (!id) return;
     setSavingAddress(true);
@@ -313,8 +345,27 @@ export default function RequestDetail() {
         <div className="p-panel-content">
           <div style={{ display: "flex", gap: 40 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Device:</strong> {request.deviceType}
+              <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <strong>Device:</strong>
+                <span>{request.deviceType || '-'}</span>
+                <Button
+                  label="Modifica"
+                  icon="pi pi-pencil"
+                  className="p-button-text"
+                  onClick={() => {
+                    const currentType = request.deviceType ?? "";
+                    if (!currentType || DEVICE_TYPE_OPTIONS.includes(currentType)) {
+                      setDeviceTypeValue(currentType);
+                      setIsDeviceTypeOther(false);
+                      setDeviceTypeOtherText("altro");
+                    } else {
+                      setIsDeviceTypeOther(true);
+                      setDeviceTypeOtherText(currentType);
+                      setDeviceTypeValue("");
+                    }
+                    setShowChangeDeviceTypeDialog(true);
+                  }}
+                />
               </div>
               <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
                 <strong>Status:</strong>
@@ -678,6 +729,59 @@ export default function RequestDetail() {
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <Button label="Annulla" className="p-button-text" onClick={() => setShowAddNoteDialog(false)} />
           <Button label="Aggiungi" onClick={handleAddNote} disabled={!noteText.trim()} />
+        </div>
+      </Dialog>
+
+      {/* Dialog per tipo device */}
+      <Dialog
+        header="Tipo device"
+        visible={showChangeDeviceTypeDialog}
+        style={{ width: "420px" }}
+        modal
+        onHide={() => setShowChangeDeviceTypeDialog(false)}
+        footer={
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <Button label="Annulla" className="p-button-text" onClick={() => setShowChangeDeviceTypeDialog(false)} disabled={savingDeviceType} />
+            <Button
+              label="Salva"
+              icon="pi pi-check"
+              onClick={handleSaveDeviceType}
+              loading={savingDeviceType}
+              disabled={isDeviceTypeOther ? !deviceTypeOtherText.trim() : !deviceTypeValue}
+            />
+          </div>
+        }
+      >
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontWeight: 500, marginBottom: 6 }}>Tipo device</label>
+          <Dropdown
+            value={deviceTypeValue}
+            options={DEVICE_TYPE_OPTIONS}
+            onChange={(e) => setDeviceTypeValue(e.value)}
+            placeholder="Seleziona tipo"
+            style={{ width: "100%" }}
+            disabled={isDeviceTypeOther}
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Checkbox
+            inputId="deviceTypeOther"
+            checked={isDeviceTypeOther}
+            onChange={(e) => {
+              setIsDeviceTypeOther(e.checked ?? false);
+              if (e.checked) setDeviceTypeValue("");
+            }}
+          />
+          <label htmlFor="deviceTypeOther" style={{ cursor: "pointer" }}>Altro</label>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <InputText
+            value={deviceTypeOtherText}
+            onChange={(e) => setDeviceTypeOtherText(e.target.value)}
+            style={{ width: "100%" }}
+            placeholder="Inserisci tipo device"
+            disabled={!isDeviceTypeOther}
+          />
         </div>
       </Dialog>
 

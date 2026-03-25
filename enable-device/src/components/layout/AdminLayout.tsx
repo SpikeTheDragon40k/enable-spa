@@ -73,7 +73,7 @@ export default function AdminLayout() {
       } else {
         setUser(u);
 
-        // Requests listener
+        // Requests listener – enriched with private sub-data and publicDeviceRequests fields
         const q = query(
           collection(db, "deviceRequests"),
           orderBy("createdAt", "desc")
@@ -85,7 +85,19 @@ export default function AdminLayout() {
               const privateRef = doc(db, `deviceRequests/${docSnap.id}/private/data`);
               const privateSnap = await getDoc(privateRef);
               const privateData = privateSnap.exists() ? privateSnap.data() : {};
-              return { ...baseData, ...privateData };
+              // Merge public fields: deviceType (fallback) and publicStatus
+              const publicRef = doc(db, `publicDeviceRequests/${docSnap.id}`);
+              const publicSnap = await getDoc(publicRef);
+              const publicData = publicSnap.exists() ? publicSnap.data() : {};
+              return {
+                ...baseData,
+                ...privateData,
+                // Keep deviceType from private if present, otherwise use public's devicetype
+                deviceType: publicData.devicetype ?? undefined,
+                // Always surface publicStatus from the public collection as a separate field
+                publicStatus2: publicData.publicStatus ?? undefined,
+                sequenceNumber: publicData.requestNumber ?? undefined,
+              };
             })
           );
           setRequests(data);

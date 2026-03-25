@@ -80,13 +80,13 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
       const deletePromises = eventsSnap.docs.map((evDoc) => deleteDoc(evDoc.ref));
       await Promise.all(deletePromises);
       await deleteDoc(doc(db, "deviceRequests", deleteId));
+      await deleteDoc(doc(db, "publicDeviceRequests", deleteId));
       toast.current?.show({
         severity: "success",
         summary: "Eliminazione",
         detail: "Richiesta eliminata con successo.",
         life: 3000,
       });
-      // ...opzionale: aggiorna la UI...
     } catch (err: unknown) {
       toast.current?.show({
         severity: "error",
@@ -200,6 +200,7 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
     age: { value: null, matchMode: FilterMatchMode.EQUALS },
     gender: { value: null, matchMode: FilterMatchMode.EQUALS },
     amputationType: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    deviceType: { value: null, matchMode: FilterMatchMode.CONTAINS },
     publicStatus: { value: null, matchMode: FilterMatchMode.EQUALS },
     province: { value: null, matchMode: FilterMatchMode.CONTAINS },
     assignedVolunteersText: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -391,6 +392,7 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
           )}
         />
         <Column field="seqId" header="ID" filter sortable />
+        <Column field="requestNumber" header="Seq" filter sortable />
         <Column field="firstName" header="Nome" filter sortable />
         <Column field="lastName" header="Cognome" filter sortable />
         <Column field="age" header="Età" filter sortable />
@@ -413,6 +415,7 @@ export default function AdminRequestTable({ requests }: AdminRequestTableProps) 
         </>
           )}
         />
+        <Column field="deviceType" header="Device" filter sortable/>
         <Column
           field="status"
           header="Stato"
