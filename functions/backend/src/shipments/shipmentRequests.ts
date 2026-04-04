@@ -152,7 +152,7 @@ export const approveShipmentRequest = onCall(
         if (data.weight != null) emailData.weight = data.weight;
 
         const emailDoc = {
-          to: [ data.email, 'volontari@e-nableitalia.it' ],
+          to: [ data.email, 'spedizione@e-nableitalia.it' ],
           template: {
             name: "shipmentRequest",
             data: emailData,
